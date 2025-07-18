@@ -20,8 +20,15 @@ func Run(commands string) {
 	}
 
 	if commandArray[0] == "make" && len(os.Args) > 1 {
-		tableName := os.Args[2]
-		maker.BuildMigration(tableName)
+		param := os.Args[2]
+
+		if commandArray[1] == "migration" {
+			maker.BuildMigration(param)
+		}
+
+		if commandArray[1] == "controller" {
+			maker.BuildController(param)
+		}
 	}
 
 	// fmt.Println(commands)

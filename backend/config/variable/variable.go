@@ -3,6 +3,9 @@ package variable
 // base path from current working directory (main.go)
 var BasePath string
 
+// controller path
+var ControllerPath string
+
 // library path
 var LibraryPath string
 
