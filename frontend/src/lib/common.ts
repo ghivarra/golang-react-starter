@@ -1,3 +1,4 @@
+import type { APIResponse } from "@/types"
 import axios, { AxiosError, type AxiosRequestConfig, type AxiosResponse } from "axios"
 import { toast } from "sonner"
 
@@ -40,7 +41,6 @@ export const getCookie = (name: string): string => {
 const prepareConfig = (withCredential: boolean, config: AxiosRequestConfig): AxiosRequestConfig => {
     // set more config
     if (typeof config.baseURL === 'undefined') {
-        console.log('HITTT')
         config.baseURL = import.meta.env.VITE_API_BASE as string
     }
 
@@ -58,8 +58,6 @@ const prepareConfig = (withCredential: boolean, config: AxiosRequestConfig): Axi
         }
     }
 
-    console.log(config)
-
     // return
     return config
 }
@@ -71,17 +69,23 @@ export const fetchApi = async (withCredential: boolean, config: AxiosRequestConf
         return response
     } catch (err: unknown) {
         if (err instanceof Error) {
-            console.warn(err)
-        } else if (err instanceof AxiosError) {
-            console.warn(err)
-            if (typeof err.response?.data !== 'undefined') {
-                toast.error(err.response.data.message)
+            if (typeof err.message === 'undefined') {
+                console.error(err)
             } else {
-                toast.error(err.message)
+                const axiosErr = err as AxiosError
+                console.warn(axiosErr)
+                if (typeof axiosErr.response!.data !== 'undefined') {
+                    const data = axiosErr.response!.data as APIResponse
+                    toast.error(data.message)
+                } else {
+                    toast.error(axiosErr.message)
+                }
             }
-        } else {
+            
+        }  else {
             console.warn(err)
         }
+
         return
     }
 }
