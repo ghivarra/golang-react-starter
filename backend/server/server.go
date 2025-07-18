@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// start gin engine http server
 func Start() {
 
 	// load gin engine
@@ -19,13 +20,11 @@ func Start() {
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 		engine = gin.New()
+		engine.Use(gin.Recovery())
 	}
 
 	// load router
 	engine = router.Load(engine)
-
-	// use recovery
-	engine.Use(gin.Recovery())
 
 	// set no proxy
 	// because the trusted proxy

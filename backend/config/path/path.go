@@ -6,6 +6,7 @@ import (
 	"path"
 )
 
+// set path variables inside backend/config/variable module
 func Set() {
 
 	// set directory

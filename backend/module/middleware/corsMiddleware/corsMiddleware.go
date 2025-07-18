@@ -2,6 +2,7 @@ package corsMiddleware
 
 import "github.com/gin-gonic/gin"
 
+// run cors middleware
 func Run(c *gin.Context) {
 
 	// set header for cors

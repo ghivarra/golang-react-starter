@@ -7,14 +7,43 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// main env
+// main environment variable. Typically would be between 'development' or 'production'
 var ENV string
 
-// server env
+// server host
 var SERVER_HOST string
+
+// server port
 var SERVER_PORT string
 
-// save
+// database host
+var DB_HOST string
+
+// database port
+var DB_PORT string
+
+// database name
+var DB_NAME string
+
+// database auth username
+var DB_USERNAME string
+
+// database auth password
+var DB_PASSWORD string
+
+// database timezone. Typically this should be UTC
+var DB_TIMEZONE string
+
+// database engine. e.g. InnoDB etc.
+var DB_ENGINE string
+
+// database charset. e.g. utf8mb4, utf8, etc.
+var DB_CHARSET string
+
+// database collation e.g. utf8mb4_general_ci, utf8mb4_unicode_ci, etc.
+var DB_COLLATE string
+
+// Save the DotEnv Configurations
 func Save() {
 	// load godotenv
 	envPath := variable.BasePath + "/.env"
@@ -27,4 +56,13 @@ func Save() {
 	ENV = os.Getenv("ENV")
 	SERVER_HOST = os.Getenv("SERVER_HOST")
 	SERVER_PORT = os.Getenv("SERVER_PORT")
+	DB_HOST = os.Getenv("DB_HOST")
+	DB_PORT = os.Getenv("DB_PORT")
+	DB_NAME = os.Getenv("DB_NAME")
+	DB_USERNAME = os.Getenv("DB_USERNAME")
+	DB_PASSWORD = os.Getenv("DB_PASSWORD")
+	DB_TIMEZONE = os.Getenv("DB_TIMEZONE")
+	DB_ENGINE = os.Getenv("DB_ENGINE")
+	DB_CHARSET = os.Getenv("DB_CHARSET")
+	DB_COLLATE = os.Getenv("DB_COLLATE")
 }

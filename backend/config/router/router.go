@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// load the router configurations into Gin Engine
 func Load(router *gin.Engine) *gin.Engine {
 
 	// set api router
