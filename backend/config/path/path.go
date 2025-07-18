@@ -17,4 +17,5 @@ func Set() {
 
 	// set base path
 	variable.BasePath = path.Clean(dir)
+	variable.LibraryPath = path.Clean(dir + "/library")
 }

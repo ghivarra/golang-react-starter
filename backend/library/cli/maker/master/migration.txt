@@ -1,0 +1,38 @@
+package #packageName
+
+import (
+    "backend/library/dbforge"
+    "backend/library/migration/tablesConfig"
+)
+
+// your table name
+var tableName = "#tableName"
+
+// function Up is your migration table configurations
+func Up() {
+
+    // create table
+    dbforge.CreateTable(dbforge.Table{
+        Name: tableName,
+        Columns: []dbforge.TableColumn{
+            {Name: "id", Type: "bigint", IsUnsigned: true, IsPrimaryIndex: true, IsAutoIncrement: true},
+        },
+        Indexes: []dbforge.TableIndex{},
+        ForeignKeys: []dbforge.TableForeignKey{},
+    })
+
+    // don't remove the line below, this is to inform the migration that this table has been migrated/created
+    tablesConfig.MigratedTables = append(tablesConfig.MigratedTables, tableName)
+}
+
+// function Down is in what sequence your migrated table will be removed/reverted
+func Down() {
+    // uncomment and delete foreign key here if exist
+    // dbforge.DropForeignKey(tableName, "foreign_key_name")
+
+    // delete table
+    dbforge.DropTable(tableName)
+
+    // don't remove the line below, this is to inform the migration that this table has been removed
+    tablesConfig.MigratedTables = append(tablesConfig.MigratedTables, tableName)
+}

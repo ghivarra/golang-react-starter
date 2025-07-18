@@ -1,8 +1,9 @@
 package cli
 
 import (
+	"backend/library/cli/maker"
 	"backend/library/migration"
-	"fmt"
+	"os"
 	"strings"
 )
 
@@ -18,5 +19,10 @@ func Run(commands string) {
 		return
 	}
 
-	fmt.Println(commands)
+	if commandArray[0] == "make" && len(os.Args) > 1 {
+		tableName := os.Args[2]
+		maker.BuildMigration(tableName)
+	}
+
+	// fmt.Println(commands)
 }
