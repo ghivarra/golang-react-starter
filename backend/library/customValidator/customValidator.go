@@ -20,7 +20,7 @@ func AlphaNumericDash(field validator.FieldLevel) bool {
 	return reg.MatchString(value)
 }
 
-// params value should be splitted by '|' e.g unique:table|column|type|excColumn|excType|excValue
+// params value should be splitted by '-' e.g "unique:table-column-excColumn-excValue"
 func Unique(field validator.FieldLevel) bool {
 	// set error
 	var err error
@@ -46,33 +46,19 @@ func Unique(field validator.FieldLevel) bool {
 	// create and execute based on supplied value types
 	if withException {
 
-		// type
-		valueType := params[2]
-		exceptionValueType := params[4]
-
-		// value
-		value := convertValueByType(fieldValue.String(), valueType)
-		exceptionValue := convertValueByType(params[5], exceptionValueType)
-
 		// check
-		isUnique, err = checkUniqueExcept(params[0], params[1], value, params[3], exceptionValue)
+		isUnique, err = checkUniqueExcept(params[0], params[1], fieldValue.String(), params[2], params[3])
 
 		// if error
 		if err != nil {
-			fmt.Println(fmt.Printf("failed to check unique validation. Reason: %v", err))
+			fmt.Println(fmt.Printf("failed to check unique validation with exception. Reason: %v", err))
 			return false
 		}
 
 	} else {
 
-		// type
-		valueType := params[2]
-
-		// value
-		value := convertValueByType(fieldValue.String(), valueType)
-
 		// check
-		isUnique, err = checkUnique(params[0], params[1], value)
+		isUnique, err = checkUnique(params[0], params[1], fieldValue.String())
 
 		// if error
 		if err != nil {
@@ -84,5 +70,3 @@ func Unique(field validator.FieldLevel) bool {
 	// return
 	return isUnique
 }
-
-// unique:string|int|int8|int16|int32|int64|uint|bool|float
