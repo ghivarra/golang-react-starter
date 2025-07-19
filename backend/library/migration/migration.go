@@ -9,13 +9,22 @@ import (
 	"fmt"
 )
 
+// migrate or create table
 func migrateTables() error {
+	// create the migration table if not exist
 	createMigrationTable()
+
+	// migrate from migration table
 	tables.MigrationUp()
+
+	// store migration table
 	tablesConfig.AfterMigrationUp()
+
+	// return no error
 	return nil
 }
 
+// drop and create table
 func refreshTables() error {
 	var err error
 
@@ -32,12 +41,19 @@ func refreshTables() error {
 	return nil
 }
 
+// drop table
 func resetTables() error {
+	// drop all migration table
 	tables.MigrationDown()
+
+	// store the dropped table
 	tablesConfig.AfterMigrationDown()
+
+	// return no error
 	return nil
 }
 
+// run migration
 func Run(command string) {
 	var err error
 	var msg string

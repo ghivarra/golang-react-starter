@@ -1,15 +1,13 @@
-package userTable
+package tokenRefreshTable
 
 import (
 	"backend/library/common/pointer"
 	"backend/library/dbforge"
 	"backend/library/migration/tablesConfig"
-	"fmt"
 )
 
 // your table name
-var tableName = "user"
-var foreignKey1 = fmt.Sprintf("fk_%s_user_id", tableName)
+var tableName = "token_refresh"
 
 // function Up is your migration table configurations
 func Up() {
@@ -22,27 +20,14 @@ func Up() {
 		Name: tableName,
 		Columns: []dbforge.TableColumn{
 			{Name: "id", Type: "bigint", IsUnsigned: &isTrue, IsPrimaryIndex: &isTrue, IsAutoIncrement: &isTrue},
-			{Name: "name", Type: "varchar", Length: pointer.IntPtr(100)},
-			{Name: "username", Type: "varchar", Length: pointer.IntPtr(100), IsUnique: &isTrue},
-			{Name: "email", Type: "varchar", Length: pointer.IntPtr(100), IsUnique: &isTrue},
-			{Name: "password", Type: "varchar", Length: pointer.IntPtr(200)},
-			{Name: "user_id", Type: "bigint", IsUnsigned: &isTrue},
+			{Name: "name", Type: "varchar", Length: pointer.IntPtr(1000)},
+			{Name: "expired_at", Type: "datetime"},
 			{Name: "created_at", Type: "datetime", Default: pointer.StringPtr("CURRENT_TIMESTAMP")},
-			{Name: "updated_at", Type: "datetime", Default: pointer.StringPtr("CURRENT_TIMESTAMP")},
-			{Name: "deleted_at", Type: "datetime", IsNullable: &isTrue},
 		},
 		Indexes: []dbforge.TableIndex{
-			{Name: "user_id"},
+			{Name: "expired_at"},
 		},
-		ForeignKeys: []dbforge.TableForeignKey{
-			{
-				Name:      foreignKey1,
-				Column:    "user_id",
-				RefTable:  "user",
-				RefColumn: "id",
-				OnUpdate:  pointer.StringPtr("cascade"),
-			},
-		},
+		ForeignKeys: []dbforge.TableForeignKey{},
 	})
 
 	// don't remove the line below, this is to inform the migration that this table has been migrated/created
@@ -52,7 +37,7 @@ func Up() {
 // function Down is in what sequence your migrated table will be removed/reverted
 func Down() {
 	// uncomment and delete foreign key here if exist
-	dbforge.DropForeignKey(tableName, foreignKey1)
+	// dbforge.DropForeignKey(tableName, "foreign_key_name")
 
 	// delete table
 	dbforge.DropTable(tableName)

@@ -9,7 +9,7 @@ import (
 func buildColumnQuery(column TableColumn) string {
 	var strColumnType string
 	if column.Length != nil && *column.Length > 0 {
-		strColumnType = fmt.Sprintf("%s(%d)", strings.ToUpper(column.Type), column.Length)
+		strColumnType = fmt.Sprintf("%s(%d)", strings.ToUpper(column.Type), *column.Length)
 	} else {
 		strColumnType = strings.ToUpper(column.Type)
 	}
