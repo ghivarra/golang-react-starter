@@ -5,6 +5,10 @@ import (
 	"fmt"
 )
 
+type UniqueResult struct {
+	Total int
+}
+
 func checkUnique(table string, column string, value any) (bool, error) {
 	// initiate result pointer
 	var result UniqueResult
@@ -21,7 +25,7 @@ func checkUnique(table string, column string, value any) (bool, error) {
 	}
 
 	// check
-	isUnique := result.total < 1
+	isUnique := result.Total < 1
 
 	// check
 	return isUnique, nil
@@ -43,7 +47,7 @@ func checkUniqueExcept(table string, column string, value any, columnException s
 	}
 
 	// check
-	isUnique := result.total < 1
+	isUnique := result.Total < 1
 
 	// check
 	return isUnique, nil
