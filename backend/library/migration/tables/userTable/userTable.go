@@ -26,19 +26,19 @@ func Up() {
 			{Name: "username", Type: "varchar", Length: pointer.IntPtr(100), IsUnique: &isTrue},
 			{Name: "email", Type: "varchar", Length: pointer.IntPtr(100), IsUnique: &isTrue},
 			{Name: "password", Type: "varchar", Length: pointer.IntPtr(200)},
-			{Name: "user_id", Type: "bigint", IsUnsigned: &isTrue},
+			{Name: "role_id", Type: "bigint", IsUnsigned: &isTrue},
 			{Name: "created_at", Type: "datetime", Default: pointer.StringPtr("CURRENT_TIMESTAMP")},
 			{Name: "updated_at", Type: "datetime", Default: pointer.StringPtr("CURRENT_TIMESTAMP")},
 			{Name: "deleted_at", Type: "datetime", IsNullable: &isTrue},
 		},
 		Indexes: []dbforge.TableIndex{
-			{Name: "user_id"},
+			{Name: "role_id"},
 		},
 		ForeignKeys: []dbforge.TableForeignKey{
 			{
 				Name:      foreignKey1,
-				Column:    "user_id",
-				RefTable:  "user",
+				Column:    "role_id",
+				RefTable:  "role",
 				RefColumn: "id",
 				OnUpdate:  pointer.StringPtr("cascade"),
 			},
