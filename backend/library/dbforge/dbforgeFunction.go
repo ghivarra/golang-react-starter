@@ -8,36 +8,36 @@ import (
 // build query for creating column inside CREATE TABLE (...) statement
 func buildColumnQuery(column TableColumn) string {
 	var strColumnType string
-	if column.Constraint > 0 {
-		strColumnType = fmt.Sprintf("%s(%d)", strings.ToUpper(column.Type), column.Constraint)
+	if column.Length != nil && *column.Length > 0 {
+		strColumnType = fmt.Sprintf("%s(%d)", strings.ToUpper(column.Type), column.Length)
 	} else {
 		strColumnType = strings.ToUpper(column.Type)
 	}
 
-	if column.IsUnsigned {
+	if column.IsUnsigned != nil && *column.IsUnsigned {
 		strColumnType += " UNSIGNED"
 	}
 
 	var columnContext []string
 
-	if column.IsUnique {
+	if column.IsUnique != nil && *column.IsUnique {
 		columnContext = append(columnContext, "UNIQUE KEY")
 	}
 
-	if column.IsPrimaryIndex {
+	if column.IsPrimaryIndex != nil && *column.IsPrimaryIndex {
 		columnContext = append(columnContext, "PRIMARY KEY")
 	}
 
-	if column.IsAutoIncrement {
+	if column.IsAutoIncrement != nil && *column.IsAutoIncrement {
 		columnContext = append(columnContext, "AUTO_INCREMENT")
 	}
 
-	if !column.IsNullable {
+	if column.IsNullable == nil || (column.IsNullable != nil && !*column.IsNullable) {
 		columnContext = append(columnContext, "NOT NULL")
 	}
 
-	if len(column.Default) > 0 {
-		columnContext = append(columnContext, fmt.Sprintf("DEFAULT %s", column.Default))
+	if column.Default != nil && len(*column.Default) > 0 {
+		columnContext = append(columnContext, fmt.Sprintf("DEFAULT %s", *column.Default))
 	}
 
 	// join all
@@ -55,12 +55,12 @@ func buildColumnIndex(index TableIndex, tableName string) string {
 func buildForeignKey(fk TableForeignKey) string {
 	query := fmt.Sprintf("CONSTRAINT %s FOREIGN KEY (`%s`) REFERENCES %s(%s)", fk.Name, fk.Column, fk.RefTable, fk.RefColumn)
 
-	if len(fk.OnUpdate) > 0 {
-		query += " ON UPDATE " + strings.ToUpper(fk.OnUpdate)
+	if fk.OnUpdate != nil && len(*fk.OnUpdate) > 0 {
+		query += " ON UPDATE " + strings.ToUpper(*fk.OnUpdate)
 	}
 
-	if len(fk.OnDelete) > 0 {
-		query += " ON DELETE " + strings.ToUpper(fk.OnDelete)
+	if fk.OnDelete != nil && len(*fk.OnDelete) > 0 {
+		query += " ON DELETE " + strings.ToUpper(*fk.OnDelete)
 	}
 
 	return query

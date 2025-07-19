@@ -2,6 +2,7 @@ package migration
 
 import (
 	"backend/database"
+	"backend/library/common/pointer"
 	"backend/library/dbforge"
 	"fmt"
 	"os"
@@ -28,15 +29,19 @@ func createMigrationTable() {
 
 	// only create if not exist
 	if !migrationTableExist() {
+
+		// create bool pointer for optional bbolean
+		isUsed := true
+
 		// migration table option
 		migrationTable := dbforge.Table{
 			Name: "migration",
 			Columns: []dbforge.TableColumn{
-				{Name: "id", Type: "bigint", IsUnsigned: true, IsPrimaryIndex: true, IsAutoIncrement: true},
-				{Name: "table", Type: "varchar", Constraint: 200, IsUnique: true},
-				{Name: "status", Type: "varchar", Constraint: 4},
-				{Name: "created_at", Type: "datetime", Default: "CURRENT_TIMESTAMP", IsNullable: true},
-				{Name: "updated_at", Type: "datetime", Default: "CURRENT_TIMESTAMP", IsNullable: true},
+				{Name: "id", Type: "bigint", IsUnsigned: &isUsed, IsPrimaryIndex: &isUsed, IsAutoIncrement: &isUsed},
+				{Name: "table", Type: "varchar", Length: pointer.IntPtr(200), IsUnique: &isUsed},
+				{Name: "status", Type: "varchar", Length: pointer.IntPtr(4)},
+				{Name: "created_at", Type: "datetime", Default: pointer.StringPtr("CURRENT_TIMESTAMP")},
+				{Name: "updated_at", Type: "datetime", Default: pointer.StringPtr("CURRENT_TIMESTAMP")},
 			},
 		}
 

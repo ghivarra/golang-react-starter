@@ -16,13 +16,13 @@ type Table struct {
 type TableColumn struct {
 	Name            string
 	Type            string
-	Constraint      int
-	Default         string // should use ` or backticks on string because NO ESCAPING HERE!
-	IsNullable      bool
-	IsUnsigned      bool
-	IsAutoIncrement bool
-	IsPrimaryIndex  bool
-	IsUnique        bool
+	Length          *int    // optional
+	Default         *string // optional, but if supplied then should use "`" or backticks on string because NO ESCAPING HERE!
+	IsNullable      *bool   // optional
+	IsUnsigned      *bool   // optional
+	IsAutoIncrement *bool   // optional
+	IsPrimaryIndex  *bool   // optional
+	IsUnique        *bool   // optional
 }
 
 type TableIndex struct {
@@ -34,6 +34,6 @@ type TableForeignKey struct {
 	Column    string
 	RefTable  string
 	RefColumn string
-	OnDelete  string // default would be restrict
-	OnUpdate  string // default would be restrict
+	OnDelete  *string // optional, default would be restrict
+	OnUpdate  *string // optional, default would be restrict
 }
