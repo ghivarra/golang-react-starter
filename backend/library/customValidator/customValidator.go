@@ -21,21 +21,21 @@ func AlphaNumericDash(field validator.FieldLevel) bool {
 }
 
 // params value should be splitted by '-' e.g "unique:table-column-excColumn-excValue"
-func Unique(field validator.FieldLevel) bool {
+func IsUnique(field validator.FieldLevel) bool {
 	// set error
 	var err error
 
-	// get param that should be splitted by '|'
+	// get param that should be splitted by '-'
 	param := field.Param()
-	params := strings.Split(param, "|")
+	params := strings.Split(param, "-")
 
-	if len(params) < 3 {
+	if len(params) < 2 {
 		fmt.Println(fmt.Printf("Failed to validate, wrong parameters. Parameter: %s", param))
 		return false
 	}
 
 	// type
-	withException := len(params) > 4
+	withException := len(params) > 3
 
 	// get value
 	fieldValue := field.Field()
@@ -69,4 +69,13 @@ func Unique(field validator.FieldLevel) bool {
 
 	// return
 	return isUnique
+}
+
+// params value should be splitted by '-' e.g "unique:table-column-excColumn-excValue"
+func IsNotUnique(field validator.FieldLevel) bool {
+	// get if unique
+	isUnique := IsUnique(field)
+
+	// return
+	return !isUnique
 }

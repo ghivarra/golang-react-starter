@@ -1,6 +1,7 @@
 package server
 
 import (
+	"backend/config/bootstrap"
 	"backend/config/environment"
 	"backend/config/router"
 	"fmt"
@@ -30,6 +31,9 @@ func Start() {
 	// because the trusted proxy
 	// should be configured in the gateway
 	engine.SetTrustedProxies(nil)
+
+	// load all in Bootstrapper
+	bootstrap.Run()
 
 	// run
 	serverDetail := fmt.Sprintf("%s:%s", environment.SERVER_HOST, environment.SERVER_PORT)
