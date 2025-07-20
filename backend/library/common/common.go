@@ -5,6 +5,8 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/go-playground/validator/v10"
 )
 
 func ConvertStringByType(initialValue string, datatype string) any {
@@ -81,6 +83,47 @@ func ConvertStringByType(initialValue string, datatype string) any {
 			return false
 		}
 	}
+
+	// return
+	return value
+}
+
+func ConvertFieldValueByType(field validator.FieldLevel) any {
+	// field
+	fieldValue := field.Field()
+	datatype := fieldValue.Type().String()
+
+	// set tempValue
+	var tempValue any
+
+	if datatype[0:4] == "uint" {
+		tempValue = fieldValue.Uint()
+	} else if datatype[0:3] == "int" {
+		tempValue = fieldValue.Int()
+	} else if datatype == "bool" {
+		tempValue = fieldValue.Bool()
+	} else if datatype == "string" {
+		tempValue = fieldValue.String()
+	} else if datatype[0:5] == "float" {
+		tempValue = fieldValue.Float()
+	} else {
+		tempValue = fieldValue.String()
+	}
+
+	// all must can be converted into string
+	initialValue := fmt.Sprintf("%v", tempValue)
+
+	// init result
+	var value any
+
+	// check if type is allowed
+	if !slices.Contains(ConvertAllowedTypes, datatype) {
+		fmt.Println(fmt.Errorf("wrong types on unique validation. type: %s, data: %v", datatype, initialValue))
+		return false
+	}
+
+	// value
+	value = ConvertStringByType(initialValue, datatype)
 
 	// return
 	return value

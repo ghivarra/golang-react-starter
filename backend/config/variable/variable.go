@@ -13,4 +13,4 @@ var LibraryPath string
 var RequestType string
 
 // Allowed arguments in Command Line Interface
-var CLIAllowedArguments []string = []string{"db:migrate", "db:reset", "db:refresh", "make:migration", "make:controller"}
+var CLIAllowedArguments []string = []string{"db:migrate", "db:reset", "db:seed", "db:refresh", "make:migration", "make:controller"}

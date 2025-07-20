@@ -53,3 +53,19 @@ var RegisterError map[string]common.ErrorMessageInterface = map[string]common.Er
 		},
 	},
 }
+
+var AuthorizeError map[string]common.ErrorMessageInterface = map[string]common.ErrorMessageInterface{
+	"Username": {
+		Field: "username",
+		Messages: map[string]string{
+			"required":      "Kolom username wajib diisi",
+			"is_not_unique": "Username dan password tidak cocok",
+		},
+	},
+	"Password": {
+		Field: "password",
+		Messages: map[string]string{
+			"required": "Kolom password wajib diisi",
+		},
+	},
+}

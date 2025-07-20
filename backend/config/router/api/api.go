@@ -14,6 +14,7 @@ func Load(router *gin.Engine) *gin.Engine {
 	// set api router
 	api := router.Group("api")
 	api.Use(corsMiddleware.Run)
+	api.Use(dbConnectMiddleware.Run)
 
 	// module group
 	apiModule := api.Group("module")
@@ -26,7 +27,8 @@ func Load(router *gin.Engine) *gin.Engine {
 	// user group
 	apiUser := api.Group("user")
 	apiUser.GET("/", userController.Index)
-	apiUser.POST("/register", dbConnectMiddleware.Run, userController.Register)
+	apiUser.POST("/register", userController.Register)
+	apiUser.POST("/authenticate", userController.Authenticate)
 
 	// return instance
 	return router

@@ -7,7 +7,7 @@ import (
 )
 
 type Module struct {
-	ID        uint64    `gorm:"primaryKey"`
+	ID        uint64    `gorm:"primaryKey;->"`
 	Name      string    `gorm:"unique;size:200;not null"`
 	Alias     string    `gorm:"size:200;not null"`
 	CreatedAt time.Time `gorm:"<-:create;autoCreateTime"`
@@ -15,7 +15,7 @@ type Module struct {
 }
 
 type Role struct {
-	ID           uint64    `gorm:"primaryKey"`
+	ID           uint64    `gorm:"primaryKey;->"`
 	Name         string    `gorm:"unique;size:60;not null"`
 	IsSuperadmin int       `gorm:"defalt:0;not null"`
 	CreatedAt    time.Time `gorm:"<-:create;autoCreateTime"`
@@ -23,7 +23,7 @@ type Role struct {
 }
 
 type RoleModuleList struct {
-	ID       uint64 `gorm:"primaryKey"`
+	ID       uint64 `gorm:"primaryKey;->"`
 	RoleID   uint64 `gorm:"column:role_id;index"`
 	Role     Role   `gorm:"foreignKey:RoleID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	ModuleID uint64 `gorm:"column:module_id;index"`
@@ -31,7 +31,7 @@ type RoleModuleList struct {
 }
 
 type User struct {
-	ID        uint64         `gorm:"primaryKey"`
+	ID        uint64         `gorm:"primaryKey;->"`
 	Name      string         `gorm:"size:100;not null"`
 	Username  string         `gorm:"unique;size:100;not null"`
 	Email     string         `gorm:"unique;size:100;not null"`
@@ -44,7 +44,7 @@ type User struct {
 }
 
 type TokenRefresh struct {
-	ID        uint64    `gorm:"primaryKey"`
+	ID        string    `gorm:"primaryKey"`
 	Name      string    `gorm:"size:1000;not null"`
 	UserID    uint64    `gorm:"column:user_id;index"`
 	User      User      `gorm:"foreignKey:UserID;references:ID;constraint:OnUpdate:RESTRICT,OnDelete:RESTRICT;"`
@@ -53,8 +53,7 @@ type TokenRefresh struct {
 }
 
 type TokenRevoked struct {
-	ID        uint64    `gorm:"primaryKey"`
-	Name      string    `gorm:"size:1000;not null"`
+	ID        string    `gorm:"primaryKey"`
 	ExpiredAt time.Time `gorm:"not null"`
 	RevokedAt time.Time `gorm:"<-:create;autoCreateTime"`
 }

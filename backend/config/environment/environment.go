@@ -3,12 +3,16 @@ package environment
 import (
 	"backend/config/variable"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
 
 // main environment variable. Typically would be between 'development' or 'production'
 var ENV string
+
+// name of the app
+var APP_NAME string
 
 // server host
 var SERVER_HOST string
@@ -43,6 +47,15 @@ var DB_CHARSET string
 // database collation e.g. utf8mb4_general_ci, utf8mb4_unicode_ci, etc.
 var DB_COLLATE string
 
+// jwt key
+var JWT_KEY string
+
+// jwt access token expired in seconds
+var JWT_ACCESS_EXPIRED int64
+
+// jwt refresh token expired in seconds
+var JWT_REFRESH_EXPIRED int64
+
 // Save the DotEnv Configurations
 func Save() {
 	// load godotenv
@@ -54,6 +67,7 @@ func Save() {
 
 	// save
 	ENV = os.Getenv("ENV")
+	APP_NAME = os.Getenv("APP_NAME")
 	SERVER_HOST = os.Getenv("SERVER_HOST")
 	SERVER_PORT = os.Getenv("SERVER_PORT")
 	DB_HOST = os.Getenv("DB_HOST")
@@ -65,4 +79,12 @@ func Save() {
 	DB_ENGINE = os.Getenv("DB_ENGINE")
 	DB_CHARSET = os.Getenv("DB_CHARSET")
 	DB_COLLATE = os.Getenv("DB_COLLATE")
+	JWT_KEY = os.Getenv("JWT_KEY")
+
+	// need to be converted
+	accessExpired, _ := strconv.Atoi(os.Getenv("JWT_ACCESS_EXPIRED"))
+	JWT_ACCESS_EXPIRED = int64(accessExpired)
+
+	refreshExpired, _ := strconv.Atoi(os.Getenv("JWT_REFRESH_EXPIRED"))
+	JWT_REFRESH_EXPIRED = int64(refreshExpired)
 }
