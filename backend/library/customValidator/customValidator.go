@@ -41,6 +41,10 @@ func IsUnique(field validator.FieldLevel) bool {
 	// get value
 	fieldValue := field.Field()
 
+	// convert value
+	dataType := fieldValue.Type().String()
+	value := common.ConvertFieldValueByType(field)
+
 	// check
 	var isUnique bool
 
@@ -62,8 +66,8 @@ func IsUnique(field validator.FieldLevel) bool {
 
 	} else {
 
-		// check
-		isUnique, err = checkUnique(params[0], params[1], fieldValue.String())
+		isUnique, err = checkUnique(params[0], params[1], value)
+		fmt.Println(params, value, dataType, isUnique)
 
 		// if error
 		if err != nil {
@@ -82,13 +86,5 @@ func IsNotUnique(field validator.FieldLevel) bool {
 	isUnique := IsUnique(field)
 
 	// return
-	var exist bool
-
-	if isUnique {
-		exist = true
-	} else {
-		exist = false
-	}
-
-	return exist
+	return !isUnique
 }
