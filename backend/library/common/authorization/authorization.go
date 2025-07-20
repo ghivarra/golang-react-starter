@@ -8,7 +8,7 @@ import (
 
 func CreateToken(data ClaimData) (string, error) {
 	// create new claims token
-	claim := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
+	claim := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": data.JTI,
 		"iss": data.ISS,
 		"aud": data.AUD,
@@ -17,7 +17,7 @@ func CreateToken(data ClaimData) (string, error) {
 	})
 
 	// token
-	return claim.SignedString(environment.JWT_KEY)
+	return claim.SignedString([]byte(environment.JWT_KEY))
 }
 
 func RevokeToken() {
