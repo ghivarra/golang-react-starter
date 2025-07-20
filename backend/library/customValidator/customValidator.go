@@ -26,9 +26,9 @@ func IsUnique(field validator.FieldLevel) bool {
 	// set error
 	var err error
 
-	// get param that should be splitted by '-'
+	// get param that should be splitted by ':' or double dot
 	param := field.Param()
-	params := strings.Split(param, "-")
+	params := strings.Split(param, ":")
 
 	if len(params) < 2 {
 		fmt.Println(fmt.Printf("Failed to validate, wrong parameters. Parameter: %s", param))
