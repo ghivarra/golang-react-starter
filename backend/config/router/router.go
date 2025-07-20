@@ -1,9 +1,7 @@
 package router
 
 import (
-	"backend/module/controller/userController"
-	"backend/module/middleware/corsMiddleware"
-	"backend/module/middleware/dbConnectMiddleware"
+	"backend/config/router/api"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,14 +9,9 @@ import (
 // load the router configurations into Gin Engine
 func Load(router *gin.Engine) *gin.Engine {
 
-	// set api router
-	api := router.Group("api")
-	api.Use(corsMiddleware.Run)
+	// load api group router
+	router = api.Load(router)
 
-	// user group
-	apiUser := api.Group("user")
-	apiUser.GET("/", userController.Index)
-	apiUser.POST("/register", dbConnectMiddleware.Run, userController.Register)
-
+	// return router instance
 	return router
 }
