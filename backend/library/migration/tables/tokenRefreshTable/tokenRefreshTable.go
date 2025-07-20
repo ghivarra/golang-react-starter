@@ -21,8 +21,7 @@ func Up() {
 	dbforge.CreateTable(dbforge.Table{
 		Name: tableName,
 		Columns: []dbforge.TableColumn{
-			{Name: "id", Type: "bigint", IsUnsigned: &isTrue, IsPrimaryIndex: &isTrue, IsAutoIncrement: &isTrue},
-			{Name: "name", Type: "varchar", Length: pointer.IntPtr(1000)},
+			{Name: "id", Type: "char", Length: pointer.IntPtr(100), IsPrimaryIndex: &isTrue},
 			{Name: "user_id", Type: "bigint", IsUnsigned: &isTrue},
 			{Name: "expired_at", Type: "datetime"},
 			{Name: "created_at", Type: "datetime", Default: pointer.StringPtr("CURRENT_TIMESTAMP")},

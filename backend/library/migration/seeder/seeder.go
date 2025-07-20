@@ -22,7 +22,7 @@ func Run() error {
 // seed roles
 func seedRole() {
 	var role model.Role
-	role.Name = "superadmin"
+	role.Name = "Super Admin"
 	role.IsSuperadmin = 1
 
 	// add
