@@ -1,6 +1,7 @@
 package customValidator
 
 import (
+	"backend/library/common"
 	"fmt"
 	"regexp"
 	"strings"
@@ -35,7 +36,7 @@ func IsUnique(field validator.FieldLevel) bool {
 	}
 
 	// type
-	withException := len(params) > 3
+	withException := len(params) > 4
 
 	// get value
 	fieldValue := field.Field()
@@ -46,8 +47,12 @@ func IsUnique(field validator.FieldLevel) bool {
 	// create and execute based on supplied value types
 	if withException {
 
+		// get exception value from binding
+		exceptInitial := field.Parent().FieldByName(params[3]).String()
+		exceptValue := common.ConvertStringByType(exceptInitial, params[4])
+
 		// check
-		isUnique, err = checkUniqueExcept(params[0], params[1], fieldValue.String(), params[2], params[3])
+		isUnique, err = checkUniqueExcept(params[0], params[1], fieldValue.String(), params[2], exceptValue)
 
 		// if error
 		if err != nil {
