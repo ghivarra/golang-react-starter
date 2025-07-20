@@ -16,3 +16,8 @@ var ConvertAllowedTypes []string = []string{
 	"float64",
 	"bool",
 }
+
+type ErrorMessageInterface struct {
+	Field    string
+	Messages map[string]string
+}

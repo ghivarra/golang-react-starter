@@ -77,5 +77,13 @@ func IsNotUnique(field validator.FieldLevel) bool {
 	isUnique := IsUnique(field)
 
 	// return
-	return !isUnique
+	var exist bool
+
+	if isUnique {
+		exist = true
+	} else {
+		exist = false
+	}
+
+	return exist
 }
