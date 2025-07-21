@@ -9,6 +9,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Create new account
+func Create(c *gin.Context) {
+
+}
+
+// change account password
+func ChangePassword(c *gin.Context) {
+
+}
+
 // delete account
 func Delete(c *gin.Context) {
 	// get input id
@@ -48,6 +58,16 @@ func Delete(c *gin.Context) {
 		"status":  "success",
 		"message": fmt.Sprintf("Akun %s berhasil dihapus", user.Name),
 	})
+}
+
+// find specific account
+func Find(c *gin.Context) {
+
+}
+
+// get index of accounts
+func Index(c *gin.Context) {
+
 }
 
 // User Update endpoint

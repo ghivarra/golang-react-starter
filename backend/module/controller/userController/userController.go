@@ -6,6 +6,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// change own password account
+func ChangePassword(c *gin.Context) {
+
+}
+
+// delete own account
+func Delete(c *gin.Context) {
+
+}
+
 // Fetch User Data Endpoint
 func Get(c *gin.Context) {
 	// get data
@@ -32,4 +42,9 @@ func Get(c *gin.Context) {
 		"message": "Data berhasil ditarik",
 		"data":    user,
 	})
+}
+
+// update own account data
+func Update(c *gin.Context) {
+
 }

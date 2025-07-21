@@ -49,8 +49,8 @@ func Find(c *gin.Context) {
 
 }
 
-// list all of modules
-func Get(c *gin.Context) {
+// fetch list of modules
+func Index(c *gin.Context) {
 
 }
 

@@ -26,26 +26,34 @@ func Load(router *gin.Engine) *gin.Engine {
 	apiAuth.POST("/refresh-token", authController.RefreshToken)
 
 	// account
-	apiAccount := api.Group("account").Use(auth.IsLoggedIn)
-	apiAccount.PATCH("/update", name.Save("user.update"), auth.CheckRole, accountController.Update)
+	apiAccount := api.Group("account")
+	apiAccount.Use(auth.IsLoggedIn)
+
+	apiAccount.GET("/", name.Save("user.index"), auth.CheckRole, accountController.Index)
+	apiAccount.GET("/find", name.Save("user.find"), auth.CheckRole, accountController.Find)
+	apiAccount.POST("/create", name.Save("user.create"), auth.CheckRole, accountController.Create)
 	apiAccount.PATCH("/change-password", name.Save("user.change-password"), auth.CheckRole, accountController.Update)
+	apiAccount.PATCH("/update", name.Save("user.update"), auth.CheckRole, accountController.Update)
 	apiAccount.DELETE("/delete", name.Save("user.delete"), auth.CheckRole, accountController.Delete)
 
 	// self user endpoint
-	apiUser := api.Group("user").Use(auth.IsLoggedIn)
-	apiUser.GET("/self", userController.Get)
-	apiUser.PATCH("/self/change-password", userController.Get)
-	apiUser.PATCH("/self/update", userController.Get)
-	apiUser.POST("/self/delete", userController.Get)
+	apiUser := api.Group("user")
+	apiUser.Use(auth.IsLoggedIn)
+
+	apiUser.GET("/", userController.Get)
+	apiUser.PATCH("/change-password", userController.ChangePassword)
+	apiUser.PATCH("/update", userController.Update)
+	apiUser.POST("/delete", userController.Delete)
 
 	// module group
 	apiModule := api.Group("module")
-	apiUser.Use(auth.IsLoggedIn)
-	apiModule.GET("/", moduleController.Get)
+	apiModule.Use(auth.IsLoggedIn)
+
+	apiModule.GET("/", moduleController.Index)
 	apiModule.GET("/find", moduleController.Find)
 	apiModule.POST("/create", moduleController.Create)
-	apiModule.DELETE("/delete", moduleController.Delete)
 	apiModule.PATCH("/update", moduleController.Update)
+	apiModule.DELETE("/delete", moduleController.Delete)
 
 	// return instance
 	return router
