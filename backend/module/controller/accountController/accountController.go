@@ -19,8 +19,8 @@ func ChangePassword(c *gin.Context) {
 
 }
 
-// delete account
-func Delete(c *gin.Context) {
+// deactivate account
+func Deactivate(c *gin.Context) {
 	// get input id
 	userID := c.DefaultQuery("id", "0")
 
@@ -67,6 +67,11 @@ func Find(c *gin.Context) {
 
 // get index of accounts
 func Index(c *gin.Context) {
+
+}
+
+// purge account, hard delete
+func Purge(c *gin.Context) {
 
 }
 

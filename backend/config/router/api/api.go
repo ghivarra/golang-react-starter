@@ -34,7 +34,8 @@ func Load(router *gin.Engine) *gin.Engine {
 	apiAccount.POST("/create", name.Save("user.create"), auth.CheckRole, accountController.Create)
 	apiAccount.PATCH("/change-password", name.Save("user.change-password"), auth.CheckRole, accountController.Update)
 	apiAccount.PATCH("/update", name.Save("user.update"), auth.CheckRole, accountController.Update)
-	apiAccount.DELETE("/delete", name.Save("user.delete"), auth.CheckRole, accountController.Delete)
+	apiAccount.DELETE("/deactivate", name.Save("user.deactivate"), auth.CheckRole, accountController.Deactivate)
+	apiAccount.DELETE("/purge", name.Save("user.purge"), auth.CheckRole, accountController.Purge)
 
 	// self user endpoint
 	apiUser := api.Group("user")
