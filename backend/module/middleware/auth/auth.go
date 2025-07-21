@@ -67,6 +67,20 @@ func IsLoggedIn(c *gin.Context) {
 		Where("username = ?", auth.JWT_DATA.SUB).
 		First(&user)
 
+	// if user not found then kick
+	if user.Email == "" {
+		c.AbortWithStatusJSON(401, gin.H{
+			"status":  "error",
+			"message": "Otorisasi gagal",
+			"errors": map[string][]string{
+				"authorization": {
+					"Akun anda sudah dinonaktifkan",
+				},
+			},
+		})
+		return
+	}
+
 	// store user data in context
 	c.Set("userdata", user)
 

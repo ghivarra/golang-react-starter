@@ -4,6 +4,7 @@ import (
 	"backend/database"
 	"backend/library/common"
 	"backend/module/model"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -23,7 +24,7 @@ func ChangePassword(c *gin.Context) {
 		return
 	}
 
-	// update password
+	// get user data
 	userdata, userdataExist := c.Get("userdata")
 	if !userdataExist {
 		c.AbortWithStatusJSON(404, gin.H{
@@ -33,7 +34,7 @@ func ChangePassword(c *gin.Context) {
 		return
 	}
 
-	// set
+	// assert new type
 	user := userdata.(common.FetchedUserData)
 
 	// verifikasi password lama
@@ -78,8 +79,35 @@ func ChangePassword(c *gin.Context) {
 }
 
 // delete own account
-func Delete(c *gin.Context) {
+func Deactivate(c *gin.Context) {
+	// get user data
+	userdata, userdataExist := c.Get("userdata")
+	if !userdataExist {
+		c.AbortWithStatusJSON(404, gin.H{
+			"status":  "error",
+			"message": "User tidak ditemukan",
+		})
+		return
+	}
 
+	// assert new type
+	user := userdata.(common.FetchedUserData)
+
+	// remove account
+	delete := database.CONN.Delete(&model.User{}, user.ID)
+	if delete.Error != nil {
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Gagal menghapus data",
+		})
+		return
+	}
+
+	// return
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": "Akun anda sudah tidak aktif",
+	})
 }
 
 // Fetch User Data Endpoint
@@ -112,5 +140,58 @@ func Get(c *gin.Context) {
 
 // update own account data
 func Update(c *gin.Context) {
+	// get and validate input
+	var input UserUpdateForm
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Gagal memperbaharui data akun",
+			"errors":  common.ConvertValidationError(err.Error(), UserUpdateError),
+		})
+		return
+	}
 
+	// get user data
+	userdata, userdataExist := c.Get("userdata")
+	if !userdataExist {
+		c.AbortWithStatusJSON(404, gin.H{
+			"status":  "error",
+			"message": "User tidak ditemukan",
+		})
+		return
+	}
+
+	// assert new type
+	user := userdata.(common.FetchedUserData)
+
+	// validasi ID pada input
+	if input.ID != user.ID {
+		c.AbortWithStatusJSON(404, gin.H{
+			"status":  "error",
+			"message": "User tidak valid",
+		})
+		return
+	}
+
+	// update user
+	result := database.CONN.
+		Model(&model.User{}).
+		Where("id = ?", user.ID).
+		Updates(input)
+
+	if result.Error != nil {
+		fmt.Println(result.Error.Error())
+		c.AbortWithStatusJSON(503, gin.H{
+			"status":  "error",
+			"message": "Gagal memperbaharui data akun",
+		})
+		return
+	}
+
+	// send ok
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": "Data akun anda berhasil diperbaharui",
+	})
 }

@@ -43,7 +43,7 @@ func Load(router *gin.Engine) *gin.Engine {
 	apiUser.GET("/", userController.Get)
 	apiUser.PATCH("/change-password", userController.ChangePassword)
 	apiUser.PATCH("/update", userController.Update)
-	apiUser.POST("/delete", userController.Delete)
+	apiUser.DELETE("/deactivate", userController.Deactivate)
 
 	// module group
 	apiModule := api.Group("module")

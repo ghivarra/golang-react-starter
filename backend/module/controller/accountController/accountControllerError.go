@@ -42,22 +42,4 @@ var AccountUpdateError map[string]common.ErrorMessageInterface = map[string]comm
 			"is_not_unique": "Role tidak ditemukan.",
 		},
 	},
-	"Password": {
-		Field: "password",
-		Messages: map[string]string{
-			"required":      "Anda belum mengisi password.",
-			"min":           "Password minimal 10 karakter.",
-			"confirmed":     "Password dan Konfirmasi Password tidak sama.",
-			"has_uppercase": "Password harus mengandung minimal 1 huruf kapital.",
-			"has_lowercase": "Password harus mengandung minimal 1 huruf non-kapital.",
-			"has_number":    "Password harus mengandung minimal 1 nomor.",
-			"has_symbol":    "Password harus mengandung minimal 1 simbol selain angka dan huruf.",
-		},
-	},
-	"PasswordConfirmation": {
-		Field: "password_confirmation",
-		Messages: map[string]string{
-			"required": "Anda belum mengisi konfirmasi password.",
-		},
-	},
 }

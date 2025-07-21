@@ -78,7 +78,7 @@ func Update(c *gin.Context) {
 	if err != nil {
 		c.AbortWithStatusJSON(422, gin.H{
 			"status":  "error",
-			"message": "Gagal memperbaharui data user",
+			"message": "Gagal memperbaharui data akun",
 			"errors":  common.ConvertValidationError(err.Error(), AccountUpdateError),
 		})
 		return
@@ -107,7 +107,7 @@ func Update(c *gin.Context) {
 		fmt.Println(result.Error.Error())
 		c.AbortWithStatusJSON(503, gin.H{
 			"status":  "error",
-			"message": "Gagal memperbaharui data user",
+			"message": "Gagal memperbaharui data akun",
 		})
 		return
 	}
@@ -115,6 +115,6 @@ func Update(c *gin.Context) {
 	// send ok
 	c.JSON(200, gin.H{
 		"status":  "success",
-		"message": fmt.Sprintf("Data user '%s' berhasil diperbaharui", input.Name),
+		"message": fmt.Sprintf("Data akun '%s' berhasil diperbaharui", input.Name),
 	})
 }

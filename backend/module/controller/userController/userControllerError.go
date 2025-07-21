@@ -28,3 +28,31 @@ var UserChangePasswordError map[string]common.ErrorMessageInterface = map[string
 		},
 	},
 }
+
+var UserUpdateError map[string]common.ErrorMessageInterface = map[string]common.ErrorMessageInterface{
+	"Name": {
+		Field: "name",
+		Messages: map[string]string{
+			"required": "Anda belum mengisi nama.",
+			"max":      "Nama maksimal 100 karakter.",
+		},
+	},
+	"Username": {
+		Field: "username",
+		Messages: map[string]string{
+			"required":          "Anda belum mengisi username.",
+			"max":               "Username maksimal 100 karakter.",
+			"is_unique":         "Username sudah dipakai",
+			"alphanumeric_dash": "Username hanya boleh menggunakan alfabet, nomor, strip, dan underscore",
+		},
+	},
+	"Email": {
+		Field: "email",
+		Messages: map[string]string{
+			"required":  "Anda belum mengisi email.",
+			"max":       "Email maksimal 100 karakter.",
+			"email":     "Email tidak valid.",
+			"is_unique": "Email sudah dipakai",
+		},
+	},
+}
