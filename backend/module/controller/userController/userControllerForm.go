@@ -15,3 +15,9 @@ type UserLoginForm struct {
 	Username string `json:"username" binding:"required,is_not_unique=user:username"`
 	Password string `json:"password" binding:"required"`
 }
+
+// refresh token form interface
+type RefreshTokenForm struct {
+	AccessToken  string `json:"access_token" binding:"required"`
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}

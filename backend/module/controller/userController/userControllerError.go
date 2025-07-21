@@ -69,3 +69,18 @@ var AuthorizeError map[string]common.ErrorMessageInterface = map[string]common.E
 		},
 	},
 }
+
+var RefreshTokenError map[string]common.ErrorMessageInterface = map[string]common.ErrorMessageInterface{
+	"AccessToken": {
+		Field: "access_token",
+		Messages: map[string]string{
+			"required": "Kolom access_token wajib diisi",
+		},
+	},
+	"RefreshToken": {
+		Field: "refresh_token",
+		Messages: map[string]string{
+			"required": "Kolom refresh_token wajib diisi",
+		},
+	},
+}

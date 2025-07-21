@@ -1,18 +1,29 @@
 package userController
 
 import (
-	"backend/config/environment"
 	"backend/database"
 	"backend/library/common"
-	"backend/library/common/authorization"
+	"backend/library/common/auth"
 	"backend/module/model"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
+
+type userData struct {
+	ID        uint64    `gorm:"column:id"`
+	Name      string    `gorm:"column:name"`
+	Username  string    `gorm:"column:username"`
+	Email     string    `gorm:"column:email"`
+	Password  string    `gorm:"column:password"`
+	RoleID    uint64    `gorm:"column:role_id"`
+	RoleName  string    `gorm:"column:role_name"`
+	CreatedAt time.Time `gorm:"column:created_at"`
+	UpdatedAt time.Time `gorm:"column:updated_at"`
+}
 
 // authorization
 func Authenticate(c *gin.Context) {
@@ -26,19 +37,6 @@ func Authenticate(c *gin.Context) {
 			"errors":  common.ConvertValidationError(err.Error(), AuthorizeError),
 		})
 		return
-	}
-
-	// new struct
-	type userData struct {
-		ID        uint64    `gorm:"column:id"`
-		Name      string    `gorm:"column:name"`
-		Username  string    `gorm:"column:username"`
-		Email     string    `gorm:"column:email"`
-		Password  string    `gorm:"column:password"`
-		RoleID    uint64    `gorm:"column:role_id"`
-		RoleName  string    `gorm:"column:role_name"`
-		CreatedAt time.Time `gorm:"column:created_at"`
-		UpdatedAt time.Time `gorm:"column:updated_at"`
 	}
 
 	// create interface
@@ -68,20 +66,11 @@ func Authenticate(c *gin.Context) {
 	// remove password
 	user.Password = "(secret)"
 
-	// get claim data
-	claimData := authorization.ClaimData{
-		JTI: uuid.New().String(),
-		SUB: user.Username,
-		AUD: user.RoleID,
-		ISS: environment.APP_NAME,
-		EXP: time.Now().Add(time.Second + time.Duration(environment.JWT_ACCESS_EXPIRED)).Unix(),
-		IAT: time.Now().Unix(),
-	}
+	// password matched! generate token
 
-	// password matched! return token
-	accessToken, err := authorization.CreateToken(claimData)
-	if err != nil {
-		fmt.Println(err)
+	// create access token
+	accessToken := auth.CreateAccessToken(model.User{Username: user.Username, RoleID: user.RoleID})
+	if accessToken.Error != nil {
 		c.AbortWithStatusJSON(500, gin.H{
 			"status":  "error",
 			"message": "Otorisasi gagal, Ada kesalahan pada server",
@@ -90,11 +79,12 @@ func Authenticate(c *gin.Context) {
 	}
 
 	// set refresh token
-	claimData.JTI = uuid.New().String()
-	claimData.EXP = time.Now().Add(time.Second + time.Duration(environment.JWT_REFRESH_EXPIRED)).Unix()
-	refreshToken, err := authorization.CreateToken(claimData)
-	if err != nil {
-		fmt.Println(err)
+	refreshToken := auth.CreateRefreshToken(
+		model.User{Username: user.Username, RoleID: user.RoleID},
+		accessToken.Data.JTI,
+	)
+
+	if refreshToken.Error != nil {
 		c.AbortWithStatusJSON(500, gin.H{
 			"status":  "error",
 			"message": "Otorisasi gagal, Ada kesalahan pada server",
@@ -103,20 +93,59 @@ func Authenticate(c *gin.Context) {
 	}
 
 	// add into refresh token table
-	database.CONN.Create(&model.TokenRefresh{
-		ID:        claimData.JTI,
-		ExpiredAt: time.Unix(claimData.EXP, claimData.EXP*1000),
+	result := database.CONN.Create(&model.TokenRefresh{
+		ID:        refreshToken.Data.JTI,
+		UserID:    user.ID,
+		ExpiredAt: time.Unix(refreshToken.Data.EXP, refreshToken.Data.EXP*1000),
 	})
+
+	if result.Error != nil {
+		c.AbortWithStatusJSON(503, gin.H{
+			"status":  "error",
+			"message": "Gagal menyimpan refresh token",
+		})
+		return
+	}
 
 	// return
 	c.JSON(200, gin.H{
 		"status":  "success",
 		"message": "Otorisasi berhasil!",
 		"data": gin.H{
-			"accessToken":  accessToken,
-			"refreshToken": refreshToken,
+			"accessToken":  accessToken.Token,
+			"refreshToken": refreshToken.Token,
 			"user":         user,
 		},
+	})
+}
+
+// Fetch User Data Endpoint
+func Get(c *gin.Context) {
+	// create interface
+	var user userData
+
+	// get data
+	database.CONN.Model(&model.User{}).
+		Select("user.id", "user.name", "username", "email", "role_id", "role.name as role_name", "user.created_at", "user.updated_at").
+		Joins("JOIN role ON role_id = role.id").
+		Where("username = ?", auth.JWT_DATA.SUB).
+		First(&user)
+
+	// if empty
+	if user.Email == "" {
+		c.JSON(401, gin.H{
+			"status":  "error",
+			"message": "Akun tidak ditemukan",
+			"data":    user,
+		})
+		return
+	}
+
+	// return data
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": "Data berhasil ditarik",
+		"data":    user,
 	})
 }
 
@@ -168,10 +197,55 @@ func Register(c *gin.Context) {
 	})
 }
 
-// Fetch User Data Endpoint
-func Index(c *gin.Context) {
-	c.AbortWithStatusJSON(401, gin.H{
-		"status":  "error",
-		"message": "Anda belum terotorisasi",
+// Refresh Token Endpoint
+func RefreshToken(c *gin.Context) {
+	// get input and validate
+	var input RefreshTokenForm
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Rotasi token gagal",
+			"errors":  common.ConvertValidationError(err.Error(), RefreshTokenError),
+		})
+		return
+	}
+
+	// validasi refresh token
+	refreshTokenValid, err := auth.ValidateRefreshToken(input.RefreshToken, input.AccessToken)
+	if !refreshTokenValid || err != nil {
+		fmt.Println(err)
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Rotasi token gagal. Salah satu dari access token atau refresh token tidak valid.",
+		})
+		return
+	}
+
+	// create new token
+	roleID, _ := strconv.Atoi(auth.JWT_DATA.AUD[0])
+	newJWT := auth.RefreshToken(
+		auth.JWT_DATA.JTI,
+		model.User{Username: auth.JWT_DATA.SUB, RoleID: uint64(roleID)},
+	)
+
+	// if success
+	if newJWT.Error != nil {
+		fmt.Println(newJWT.Error)
+		c.AbortWithStatusJSON(503, gin.H{
+			"status":  "error",
+			"message": "Rotasi token gagal. Ada kesalahan pada server.",
+		})
+		return
+	}
+
+	// return with data
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": "Rotasi token berhasil!",
+		"data": gin.H{
+			"accessToken":  newJWT.AccessToken,
+			"refreshToken": newJWT.RefreshToken,
+		},
 	})
 }
