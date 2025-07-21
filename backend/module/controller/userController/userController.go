@@ -92,7 +92,43 @@ func Authenticate(c *gin.Context) {
 
 // delete account
 func Delete(c *gin.Context) {
+	// get input id
+	userID := c.DefaultQuery("id", "0")
 
+	// get user
+	type partialUser struct {
+		ID   uint64 `gorm:"column:id"`
+		Name string `gorm:"column:name"`
+	}
+
+	// get user data
+	var user partialUser
+	database.CONN.
+		Model(&model.User{}).
+		Select("id", "name").
+		Where("id = ?", userID).
+		First(&user)
+
+	// check if exist
+	if user.Name == "" {
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Gagal menghapus user",
+			"errors": gin.H{
+				"id": []string{"User tidak ditemukan"},
+			},
+		})
+		return
+	}
+
+	// delete
+	database.CONN.Where("id = ?", userID).Delete(&model.User{})
+
+	// return
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": fmt.Sprintf("Akun %s berhasil dihapus", user.Name),
+	})
 }
 
 // Fetch User Data Endpoint
