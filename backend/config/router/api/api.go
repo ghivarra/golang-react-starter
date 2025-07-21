@@ -1,6 +1,7 @@
 package api
 
 import (
+	"backend/module/controller/accountController"
 	"backend/module/controller/authController"
 	"backend/module/controller/moduleController"
 	"backend/module/controller/userController"
@@ -26,16 +27,16 @@ func Load(router *gin.Engine) *gin.Engine {
 
 	// account
 	apiAccount := api.Group("account").Use(auth.IsLoggedIn)
-	apiAccount.PATCH("/update", name.Save("user.update"), auth.CheckRole, userController.Update)
-	apiAccount.PATCH("/change-password", name.Save("user.change-password"), auth.CheckRole, userController.Update)
-	apiAccount.DELETE("/delete", name.Save("user.delete"), auth.CheckRole, userController.Delete)
+	apiAccount.PATCH("/update", name.Save("user.update"), auth.CheckRole, accountController.Update)
+	apiAccount.PATCH("/change-password", name.Save("user.change-password"), auth.CheckRole, accountController.Update)
+	apiAccount.DELETE("/delete", name.Save("user.delete"), auth.CheckRole, accountController.Delete)
 
 	// self user endpoint
 	apiUser := api.Group("user").Use(auth.IsLoggedIn)
-	apiUser.GET("/self", userController.Self)
-	apiUser.PATCH("/self/change-password", userController.Self)
-	apiUser.PATCH("/self/update", userController.Self)
-	apiUser.POST("/self/delete", userController.Self)
+	apiUser.GET("/self", userController.Get)
+	apiUser.PATCH("/self/change-password", userController.Get)
+	apiUser.PATCH("/self/update", userController.Get)
+	apiUser.POST("/self/delete", userController.Get)
 
 	// module group
 	apiModule := api.Group("module")
