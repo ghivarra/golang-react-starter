@@ -33,6 +33,7 @@ func Up() {
 		},
 		Indexes: []dbforge.TableIndex{
 			{Name: "role_id"},
+			{Name: "deleted_at"},
 		},
 		ForeignKeys: []dbforge.TableForeignKey{
 			{

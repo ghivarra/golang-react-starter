@@ -6,8 +6,6 @@ import (
 	"backend/library/common/auth"
 	"backend/module/model"
 	"fmt"
-	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -22,7 +20,7 @@ func Authenticate(c *gin.Context) {
 		c.AbortWithStatusJSON(422, gin.H{
 			"status":  "error",
 			"message": "Otorisasi gagal",
-			"errors":  common.ConvertValidationError(err.Error(), AuthorizeError),
+			"errors":  common.ConvertValidationError(err.Error(), AuthenticateError),
 		})
 		return
 	}
@@ -68,7 +66,7 @@ func Authenticate(c *gin.Context) {
 
 	// set refresh token
 	refreshToken := auth.CreateRefreshToken(
-		model.User{Username: user.Username, RoleID: user.RoleID},
+		model.User{Username: user.Username, RoleID: user.RoleID, ID: user.ID},
 		accessToken.Data.JTI,
 	)
 
@@ -76,21 +74,6 @@ func Authenticate(c *gin.Context) {
 		c.AbortWithStatusJSON(500, gin.H{
 			"status":  "error",
 			"message": "Otorisasi gagal, Ada kesalahan pada server",
-		})
-		return
-	}
-
-	// add into refresh token table
-	result := database.CONN.Create(&model.TokenRefresh{
-		ID:        refreshToken.Data.JTI,
-		UserID:    user.ID,
-		ExpiredAt: time.Unix(refreshToken.Data.EXP, refreshToken.Data.EXP*1000),
-	})
-
-	if result.Error != nil {
-		c.AbortWithStatusJSON(503, gin.H{
-			"status":  "error",
-			"message": "Gagal menyimpan refresh token",
 		})
 		return
 	}
@@ -132,6 +115,73 @@ func Get(c *gin.Context) {
 		"status":  "success",
 		"message": "Data berhasil ditarik",
 		"data":    user,
+	})
+}
+
+// Refresh Token Endpoint
+func RefreshToken(c *gin.Context) {
+	// get input and validate
+	var input RefreshTokenForm
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Rotasi token gagal",
+			"errors":  common.ConvertValidationError(err.Error(), RefreshTokenError),
+		})
+		return
+	}
+
+	// validasi refresh token
+	refreshTokenValid, err := auth.ValidateRefreshToken(input.RefreshToken, input.AccessToken)
+	if !refreshTokenValid || err != nil {
+		fmt.Println(err)
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Rotasi token gagal. Salah satu dari access token atau refresh token tidak valid.",
+		})
+		return
+	}
+
+	// type
+	type userData struct {
+		ID       uint64 `gorm:"column:id"`
+		Username string `gorm:"column:username"`
+		RoleID   uint64 `gorm:"column:role_id"`
+	}
+
+	// get user id
+	var user userData
+	database.CONN.
+		Model(&model.User{}).
+		Select("id", "role_id").
+		Where("username = ?", auth.JWT_DATA.SUB).
+		First(&user)
+
+	// create new token
+	newJWT := auth.RefreshToken(
+		auth.JWT_DATA.JTI,
+		model.User{Username: auth.JWT_DATA.SUB, RoleID: user.RoleID, ID: user.ID},
+	)
+
+	// if success
+	if newJWT.Error != nil {
+		fmt.Println(newJWT.Error)
+		c.AbortWithStatusJSON(503, gin.H{
+			"status":  "error",
+			"message": "Rotasi token gagal. Ada kesalahan pada server.",
+		})
+		return
+	}
+
+	// return with data
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": "Rotasi token berhasil!",
+		"data": gin.H{
+			"accessToken":  newJWT.AccessToken,
+			"refreshToken": newJWT.RefreshToken,
+		},
 	})
 }
 
@@ -183,55 +233,42 @@ func Register(c *gin.Context) {
 	})
 }
 
-// Refresh Token Endpoint
-func RefreshToken(c *gin.Context) {
-	// get input and validate
-	var input RefreshTokenForm
+// User Update endpoint
+func Update(c *gin.Context) {
+	// get and validate input
+	var input UserUpdateForm
 	err := c.ShouldBindJSON(&input)
 	if err != nil {
 		c.AbortWithStatusJSON(422, gin.H{
 			"status":  "error",
-			"message": "Rotasi token gagal",
-			"errors":  common.ConvertValidationError(err.Error(), RefreshTokenError),
+			"message": "Gagal memperbaharui data user",
+			"errors":  common.ConvertValidationError(err.Error(), UserUpdateError),
 		})
 		return
 	}
 
-	// validasi refresh token
-	refreshTokenValid, err := auth.ValidateRefreshToken(input.RefreshToken, input.AccessToken)
-	if !refreshTokenValid || err != nil {
-		fmt.Println(err)
-		c.AbortWithStatusJSON(422, gin.H{
-			"status":  "error",
-			"message": "Rotasi token gagal. Salah satu dari access token atau refresh token tidak valid.",
+	// update user
+	result := database.CONN.
+		Model(&model.User{}).
+		Where("id = ?", input.ID).
+		Updates(gin.H{
+			"name":     input.Name,
+			"username": input.Username,
+			"email":    input.Email,
+			"role_id":  input.RoleID,
 		})
-		return
-	}
 
-	// create new token
-	roleID, _ := strconv.Atoi(auth.JWT_DATA.AUD[0])
-	newJWT := auth.RefreshToken(
-		auth.JWT_DATA.JTI,
-		model.User{Username: auth.JWT_DATA.SUB, RoleID: uint64(roleID)},
-	)
-
-	// if success
-	if newJWT.Error != nil {
-		fmt.Println(newJWT.Error)
+	if result.Error != nil {
 		c.AbortWithStatusJSON(503, gin.H{
 			"status":  "error",
-			"message": "Rotasi token gagal. Ada kesalahan pada server.",
+			"message": "Gagal memperbaharui data user",
 		})
 		return
 	}
 
-	// return with data
+	// send ok
 	c.JSON(200, gin.H{
 		"status":  "success",
-		"message": "Rotasi token berhasil!",
-		"data": gin.H{
-			"accessToken":  newJWT.AccessToken,
-			"refreshToken": newJWT.RefreshToken,
-		},
+		"message": fmt.Sprintf("Data user '%s' berhasil diperbaharui", input.Name),
 	})
 }

@@ -76,6 +76,21 @@ func CreateRefreshToken(user model.User, accessTokenID string) GeneratedToken {
 	// create token
 	token, err := CreateToken(claimData)
 
+	// add into refresh token table
+	result := database.CONN.Create(&model.TokenRefresh{
+		ID:        claimData.JTI,
+		UserID:    user.ID,
+		ExpiredAt: time.Unix(claimData.EXP, 0),
+	})
+
+	if result.Error != nil {
+		return GeneratedToken{
+			Token: "",
+			Error: result.Error,
+			Data:  claimData,
+		}
+	}
+
 	// return
 	return GeneratedToken{
 		Token: token,
@@ -112,7 +127,10 @@ func RefreshToken(tokenID string, user model.User) RefreshTokenData {
 	}
 
 	// remove old refresh token
-	database.CONN.Delete(&model.TokenRefresh{}, tokenID)
+	result := database.CONN.Delete(&model.TokenRefresh{}, "id", tokenID)
+	if result.Error != nil {
+		fmt.Println(result.Error.Error())
+	}
 
 	// return
 	return RefreshTokenData{

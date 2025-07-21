@@ -7,7 +7,6 @@ import (
 )
 
 type Module struct {
-	ID        uint64    `gorm:"primaryKey;->"`
 	Name      string    `gorm:"unique;size:200;not null"`
 	Alias     string    `gorm:"size:200;not null"`
 	CreatedAt time.Time `gorm:"<-:create;autoCreateTime"`
@@ -23,11 +22,11 @@ type Role struct {
 }
 
 type RoleModuleList struct {
-	ID       uint64 `gorm:"primaryKey;->"`
-	RoleID   uint64 `gorm:"column:role_id;index"`
-	Role     Role   `gorm:"foreignKey:RoleID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	ModuleID uint64 `gorm:"column:module_id;index"`
-	Module   Module `gorm:"foreignKey:ModuleID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	ID         uint64 `gorm:"primaryKey;->"`
+	RoleID     uint64 `gorm:"column:role_id;index"`
+	Role       Role   `gorm:"foreignKey:RoleID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	ModuleName uint64 `gorm:"column:module_name;index"`
+	Module     Module `gorm:"foreignKey:ModuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 type User struct {

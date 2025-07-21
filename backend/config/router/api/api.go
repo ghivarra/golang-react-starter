@@ -32,7 +32,13 @@ func Load(router *gin.Engine) *gin.Engine {
 	apiUser.POST("/register", userController.Register)
 	apiUser.POST("/authenticate", userController.Authenticate)
 	apiUser.POST("/refresh-token", userController.RefreshToken)
-	apiUser.PATCH("/update", auth.IsLoggedIn, name.Save("user.update"), userController.Get)
+	// all user modification
+	apiUser.PATCH("/update", auth.IsLoggedIn, name.Save("user.update"), auth.CheckRole, userController.Update)
+	apiUser.DELETE("/delete", auth.IsLoggedIn, name.Save("user.delete"), auth.CheckRole, userController.Get)
+	// self user modification
+	apiUser.PATCH("/change-password", auth.IsLoggedIn, userController.Get)
+	apiUser.PATCH("/self-update", auth.IsLoggedIn, userController.Get)
+	apiUser.POST("/remove-account", auth.IsLoggedIn, userController.Get)
 
 	// return instance
 	return router

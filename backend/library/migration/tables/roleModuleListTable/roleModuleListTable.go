@@ -10,7 +10,7 @@ import (
 // your table name
 var tableName = "role_module_list"
 var foreignKey1 = fmt.Sprintf("fk_%s_role_id", tableName)
-var foreignKey2 = fmt.Sprintf("fk_%s_module_id", tableName)
+var foreignKey2 = fmt.Sprintf("fk_%s_module_name", tableName)
 
 // function Up is your migration table configurations
 func Up() {
@@ -24,11 +24,11 @@ func Up() {
 		Columns: []dbforge.TableColumn{
 			{Name: "id", Type: "bigint", IsUnsigned: &isTrue, IsPrimaryIndex: &isTrue, IsAutoIncrement: &isTrue},
 			{Name: "role_id", Type: "bigint", IsUnsigned: &isTrue},
-			{Name: "module_id", Type: "bigint", IsUnsigned: &isTrue},
+			{Name: "module_name", Type: "varchar", Length: pointer.IntPtr(200)},
 		},
 		Indexes: []dbforge.TableIndex{
 			{Name: "role_id"},
-			{Name: "module_id"},
+			{Name: "module_name"},
 		},
 		ForeignKeys: []dbforge.TableForeignKey{
 			{
@@ -41,9 +41,9 @@ func Up() {
 			},
 			{
 				Name:      foreignKey2,
-				Column:    "module_id",
+				Column:    "module_name",
 				RefTable:  "module",
-				RefColumn: "id",
+				RefColumn: "name",
 				OnDelete:  pointer.StringPtr("cascade"),
 				OnUpdate:  pointer.StringPtr("cascade"),
 			},

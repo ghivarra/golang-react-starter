@@ -76,6 +76,37 @@ func IsLoggedIn(c *gin.Context) {
 
 // check if user can access this route
 func CheckRole(c *gin.Context) {
+	// get userdata
+	userData, userDataExist := c.Get("userdata")
+	if !userDataExist {
+		c.AbortWithStatusJSON(500, gin.H{
+			"status":  "error",
+			"message": "Data user tidak ditemukan",
+		})
+		return
+	}
+
+	// get user based on supplied JWT
+	user := userData.(common.FetchedUserData)
+
+	// get role
+	type roleData struct {
+		ID           uint64 `gorm:"column:id"`
+		IsSuperadmin uint   `gorm:"column:is_superadmin"`
+	}
+
+	var role roleData
+	database.CONN.
+		Model(&model.Role{}).
+		Select("id", "is_superadmin").
+		First(&role, user.RoleID)
+
+	// check if is superadmin, if value more than 0, then always pass
+	if role.IsSuperadmin > 0 {
+		c.Next()
+		return
+	}
+
 	// get route name
 	routeName, routeNameExist := c.Get("routeName")
 
@@ -86,24 +117,36 @@ func CheckRole(c *gin.Context) {
 	}
 
 	// if route name is registered in modules
-	var module model.Module
+	var countModule int64
 	database.CONN.
+		Model(&model.Module{}).
 		Where("name = ?", routeName).
-		First(&module)
+		Count(&countModule)
 
 	// check, and if not exist then it is not registered
 	// thus it is public
-	if module.ID == 0 {
+	if countModule < 1 {
 		c.Next()
 		return
 	}
 
-	// get user based on supplied JWT
-	var user model.User
+	// check if module is exist in role check
+	var inList int64
 	database.CONN.
-		Where("username = ?", auth.JWT_DATA.SUB).
-		First(&user)
+		Model(&model.RoleModuleList{}).
+		Where("role_id = ?", user.RoleID).
+		Where("module_name = ?", routeName).
+		Count(&inList)
 
-	// user should be exist
+	// if not exist then it is forbidden
+	if inList < 1 {
+		c.AbortWithStatusJSON(403, gin.H{
+			"status":  "error",
+			"message": "Anda tidak diizinkan untuk mengakses halaman ini",
+		})
+		return
+	}
 
+	// if not superadmin then get module list
+	c.Next()
 }
