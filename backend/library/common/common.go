@@ -2,11 +2,10 @@ package common
 
 import (
 	"fmt"
+	"reflect"
 	"slices"
 	"strconv"
 	"strings"
-
-	"github.com/go-playground/validator/v10"
 )
 
 func ConvertStringByType(initialValue string, datatype string) any {
@@ -88,26 +87,25 @@ func ConvertStringByType(initialValue string, datatype string) any {
 	return value
 }
 
-func ConvertFieldValueByType(field validator.FieldLevel) any {
+func ConvertFieldValueByType(field reflect.Value) any {
 	// field
-	fieldValue := field.Field()
-	datatype := fieldValue.Type().String()
+	datatype := field.Type().String()
 
 	// set tempValue
 	var tempValue any
 
 	if datatype[0:4] == "uint" {
-		tempValue = fieldValue.Uint()
+		tempValue = field.Uint()
 	} else if datatype[0:3] == "int" {
-		tempValue = fieldValue.Int()
+		tempValue = field.Int()
 	} else if datatype == "bool" {
-		tempValue = fieldValue.Bool()
+		tempValue = field.Bool()
 	} else if datatype == "string" {
-		tempValue = fieldValue.String()
+		tempValue = field.String()
 	} else if datatype[0:5] == "float" {
-		tempValue = fieldValue.Float()
+		tempValue = field.Float()
 	} else {
-		tempValue = fieldValue.String()
+		tempValue = field.String()
 	}
 
 	// all must can be converted into string

@@ -90,6 +90,11 @@ func Authenticate(c *gin.Context) {
 	})
 }
 
+// delete account
+func Delete(c *gin.Context) {
+
+}
+
 // Fetch User Data Endpoint
 func Get(c *gin.Context) {
 	// get data
@@ -247,18 +252,27 @@ func Update(c *gin.Context) {
 		return
 	}
 
+	// type
+	type userUpdatePartial struct {
+		Name     string `gorm:"column:name"`
+		Username string `gorm:"column:username"`
+		Email    string `gorm:"column:email"`
+		RoleID   uint64 `gorm:"column:role_id"`
+	}
+
 	// update user
 	result := database.CONN.
 		Model(&model.User{}).
 		Where("id = ?", input.ID).
-		Updates(gin.H{
-			"name":     input.Name,
-			"username": input.Username,
-			"email":    input.Email,
-			"role_id":  input.RoleID,
+		Updates(userUpdatePartial{
+			Name:     input.Name,
+			Username: input.Username,
+			Email:    input.Email,
+			RoleID:   input.RoleID,
 		})
 
 	if result.Error != nil {
+		fmt.Println(result.Error.Error())
 		c.AbortWithStatusJSON(503, gin.H{
 			"status":  "error",
 			"message": "Gagal memperbaharui data user",
