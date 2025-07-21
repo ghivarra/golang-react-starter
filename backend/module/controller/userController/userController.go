@@ -13,18 +13,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type userData struct {
-	ID        uint64    `gorm:"column:id"`
-	Name      string    `gorm:"column:name"`
-	Username  string    `gorm:"column:username"`
-	Email     string    `gorm:"column:email"`
-	Password  string    `gorm:"column:password"`
-	RoleID    uint64    `gorm:"column:role_id"`
-	RoleName  string    `gorm:"column:role_name"`
-	CreatedAt time.Time `gorm:"column:created_at"`
-	UpdatedAt time.Time `gorm:"column:updated_at"`
-}
-
 // authorization
 func Authenticate(c *gin.Context) {
 	// get input
@@ -40,7 +28,7 @@ func Authenticate(c *gin.Context) {
 	}
 
 	// create interface
-	var user userData
+	var user common.FetchedUserData
 
 	// get data
 	database.CONN.Model(&model.User{}).
@@ -121,24 +109,22 @@ func Authenticate(c *gin.Context) {
 
 // Fetch User Data Endpoint
 func Get(c *gin.Context) {
-	// create interface
-	var user userData
-
 	// get data
-	database.CONN.Model(&model.User{}).
-		Select("user.id", "user.name", "username", "email", "role_id", "role.name as role_name", "user.created_at", "user.updated_at").
-		Joins("JOIN role ON role_id = role.id").
-		Where("username = ?", auth.JWT_DATA.SUB).
-		First(&user)
-
-	// if empty
-	if user.Email == "" {
-		c.JSON(401, gin.H{
+	userData, userDataExist := c.Get("userdata")
+	if !userDataExist {
+		c.JSON(422, gin.H{
 			"status":  "error",
-			"message": "Akun tidak ditemukan",
-			"data":    user,
+			"message": "User tidak ditemukan",
 		})
-		return
+	}
+
+	// convert type
+	user, assertOk := userData.(common.FetchedUserData)
+	if !assertOk {
+		c.JSON(422, gin.H{
+			"status":  "error",
+			"message": "Data user tidak valid",
+		})
 	}
 
 	// return data

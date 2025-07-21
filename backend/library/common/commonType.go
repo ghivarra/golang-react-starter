@@ -1,5 +1,7 @@
 package common
 
+import "time"
+
 var ConvertAllowedTypes []string = []string{
 	"string",
 	"int",
@@ -20,4 +22,16 @@ var ConvertAllowedTypes []string = []string{
 type ErrorMessageInterface struct {
 	Field    string
 	Messages map[string]string
+}
+
+type FetchedUserData struct {
+	ID        uint64    `gorm:"column:id"`
+	Name      string    `gorm:"column:name"`
+	Username  string    `gorm:"column:username"`
+	Email     string    `gorm:"column:email"`
+	Password  string    `gorm:"column:password"`
+	RoleID    uint64    `gorm:"column:role_id"`
+	RoleName  string    `gorm:"column:role_name"`
+	CreatedAt time.Time `gorm:"column:created_at"`
+	UpdatedAt time.Time `gorm:"column:updated_at"`
 }
