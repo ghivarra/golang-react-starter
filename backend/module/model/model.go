@@ -45,7 +45,6 @@ type User struct {
 
 type TokenRefresh struct {
 	ID        string    `gorm:"primaryKey"`
-	Name      string    `gorm:"size:1000;not null"`
 	UserID    uint64    `gorm:"column:user_id;index"`
 	User      User      `gorm:"foreignKey:UserID;references:ID;constraint:OnUpdate:RESTRICT,OnDelete:RESTRICT;"`
 	ExpiredAt time.Time `gorm:"not null"`

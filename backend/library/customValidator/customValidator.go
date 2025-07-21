@@ -42,7 +42,6 @@ func IsUnique(field validator.FieldLevel) bool {
 	fieldValue := field.Field()
 
 	// convert value
-	dataType := fieldValue.Type().String()
 	value := common.ConvertFieldValueByType(field)
 
 	// check
@@ -67,7 +66,6 @@ func IsUnique(field validator.FieldLevel) bool {
 	} else {
 
 		isUnique, err = checkUnique(params[0], params[1], value)
-		fmt.Println(params, value, dataType, isUnique)
 
 		// if error
 		if err != nil {
