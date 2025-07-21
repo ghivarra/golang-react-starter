@@ -3,9 +3,10 @@ package api
 import (
 	"backend/module/controller/moduleController"
 	"backend/module/controller/userController"
-	authMiddleware "backend/module/middleware/AuthMiddleware"
-	"backend/module/middleware/corsMiddleware"
-	"backend/module/middleware/dbConnectMiddleware"
+	"backend/module/middleware/auth"
+	"backend/module/middleware/cors"
+	"backend/module/middleware/database"
+	"backend/module/middleware/name"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,8 +15,8 @@ func Load(router *gin.Engine) *gin.Engine {
 
 	// set api router
 	api := router.Group("api")
-	api.Use(corsMiddleware.Run)
-	api.Use(dbConnectMiddleware.Run)
+	api.Use(cors.Run)
+	api.Use(database.Connect)
 
 	// module group
 	apiModule := api.Group("module")
@@ -27,10 +28,11 @@ func Load(router *gin.Engine) *gin.Engine {
 
 	// user group
 	apiUser := api.Group("user")
-	apiUser.GET("/", authMiddleware.Run, userController.Get)
+	apiUser.GET("/", auth.IsLoggedIn, userController.Get)
 	apiUser.POST("/register", userController.Register)
 	apiUser.POST("/authenticate", userController.Authenticate)
 	apiUser.POST("/refresh-token", userController.RefreshToken)
+	apiUser.PATCH("/update", auth.IsLoggedIn, name.Save("user.update"), userController.Get)
 
 	// return instance
 	return router

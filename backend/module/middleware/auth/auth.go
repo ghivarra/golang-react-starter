@@ -1,4 +1,4 @@
-package authMiddleware
+package auth
 
 import (
 	"backend/library/common/auth"
@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Run(c *gin.Context) {
+func IsLoggedIn(c *gin.Context) {
 	// get request headers
 	headers := c.Request.Header
 	authHeader, authHeaderExist := headers["Authorization"]

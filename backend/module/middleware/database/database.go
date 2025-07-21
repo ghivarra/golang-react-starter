@@ -1,4 +1,4 @@
-package dbConnectMiddleware
+package database
 
 import (
 	"backend/database"
@@ -6,8 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// middleware to connect to the database
-func Run(c *gin.Context) {
+func Connect(c *gin.Context) {
 	// connect
 	database.Connect(false)
 
