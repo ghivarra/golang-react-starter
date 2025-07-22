@@ -23,4 +23,6 @@ func Register() {
 	validation.RegisterValidation("has_lowercase", passwordValidator.HasLowercase)
 	validation.RegisterValidation("has_symbol", passwordValidator.HasSymbol)
 	validation.RegisterValidation("has_number", passwordValidator.HasNumber)
+	validation.RegisterValidation("in_list", customValidator.InList)
+	validation.RegisterValidation("not_in_list", customValidator.NotInList)
 }

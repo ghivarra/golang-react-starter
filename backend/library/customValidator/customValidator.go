@@ -4,6 +4,7 @@ import (
 	"backend/library/common"
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
@@ -82,4 +83,27 @@ func IsNotUnique(field validator.FieldLevel) bool {
 
 	// return
 	return !isUnique
+}
+
+// is in list
+func InList(field validator.FieldLevel) bool {
+	// get param that should be splitted by ':' or double dot
+	param := field.Param()
+	params := strings.Split(param, ":")
+
+	// convert value its type and convert again into string
+	initialValue := common.ConvertFieldValueByType(field.Field())
+	value := fmt.Sprintf("%v", initialValue)
+
+	// check if in list
+	return slices.Contains(params, value)
+}
+
+// is not in list
+func NotInList(field validator.FieldLevel) bool {
+	// check if in list
+	inList := InList(field)
+
+	// return
+	return !inList
 }
