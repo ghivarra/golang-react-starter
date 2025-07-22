@@ -123,7 +123,35 @@ func ChangePassword(c *gin.Context) {
 
 // find specific account
 func Find(c *gin.Context) {
+	// get and validate input
+	var input SingleIDQuery
+	err := c.ShouldBindQuery(&input)
+	if err != nil {
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Gagal menarik data akun",
+			"errors":  common.ConvertValidationError(err.Error(), SingleIDError),
+		})
+		return
+	}
 
+	// if valid then get account data
+	var user common.FetchedUserData
+	database.CONN.Model(&model.User{}).
+		Select("user.id", "user.name", "username", "email", "password", "role_id", "role.name as role_name", "user.created_at", "user.updated_at").
+		Joins("JOIN role ON role_id = role.id").
+		Where("user.id = ?", input.ID).
+		First(&user)
+
+	// mask password
+	user.Password = "(secret)"
+
+	// return
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": "Data berhasil ditarik",
+		"data":    user,
+	})
 }
 
 // get index of accounts
