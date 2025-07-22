@@ -71,11 +71,6 @@ func ActivationStatus(c *gin.Context) {
 	})
 }
 
-// Create new account
-func Create(c *gin.Context) {
-
-}
-
 // change account password
 func ChangePassword(c *gin.Context) {
 	// get and validate input

@@ -31,7 +31,7 @@ func Load(router *gin.Engine) *gin.Engine {
 
 	apiAccount.GET("/", name.Save("user.index"), auth.CheckRole, accountController.Index)
 	apiAccount.GET("/find", name.Save("user.find"), auth.CheckRole, accountController.Find)
-	apiAccount.POST("/create", name.Save("user.create"), auth.CheckRole, accountController.Create)
+	apiAccount.POST("/create", name.Save("user.create"), auth.CheckRole, authController.Register)
 	apiAccount.PATCH("/change-password", name.Save("user.change-password"), auth.CheckRole, accountController.ChangePassword)
 	apiAccount.PATCH("/update", name.Save("user.update"), auth.CheckRole, accountController.Update)
 	apiAccount.DELETE("/activation-status", name.Save("user.activation-status"), auth.CheckRole, accountController.ActivationStatus)
