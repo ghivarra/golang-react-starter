@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -77,7 +78,60 @@ func Create(c *gin.Context) {
 
 // change account password
 func ChangePassword(c *gin.Context) {
+	// get and validate input
+	var input AccountChangePasswordForm
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Gagal merubah status akun",
+			"errors":  common.ConvertValidationError(err.Error(), AccountChangePasswordError),
+		})
+		return
+	}
 
+	// hash new password
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.AbortWithStatusJSON(503, gin.H{
+			"status":  "error",
+			"message": "Server sedang sibuk",
+		})
+		return
+	}
+
+	// hashed password
+	update := database.CONN.
+		Model(&model.User{}).
+		Where("id = ?", input.ID).
+		Update("password", string(passwordHash))
+
+	if update.Error != nil {
+		c.AbortWithStatusJSON(503, gin.H{
+			"status":  "error",
+			"message": "Server sedang sibuk",
+		})
+		return
+	}
+
+	// get user data
+	type partialData struct {
+		ID   uint64 `gorm:"column:id"`
+		Name string `gorm:"column:name"`
+	}
+
+	var user partialData
+	database.CONN.
+		Model(&model.User{}).
+		Select("id", "name").
+		Where("id = ?", input.ID).
+		First(&user)
+
+	// return
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": fmt.Sprintf("Password akun %s berhasil diperbaharui", user.Name),
+	})
 }
 
 // find specific account
