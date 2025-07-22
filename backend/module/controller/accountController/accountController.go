@@ -11,6 +11,21 @@ import (
 	"gorm.io/gorm"
 )
 
+// partial for response message only
+type AccountDataPartial struct {
+	ID   uint64 `gorm:"column:id"`
+	Name string `gorm:"column:name"`
+}
+
+func getUser(id any) AccountDataPartial {
+	// get user data
+	var user AccountDataPartial
+	database.CONN.Unscoped().Where("id = ?", id).First(&user)
+
+	// return
+	return user
+}
+
 // active or inactive
 // we use the soft delete feature for this
 func ActivationStatus(c *gin.Context) {
@@ -26,21 +41,8 @@ func ActivationStatus(c *gin.Context) {
 		return
 	}
 
-	// get data
-	type accountDataPartial struct {
-		ID   uint64 `gorm:"column:id"`
-		Name string `gorm:"column:name"`
-	}
-
 	// data
-	var data accountDataPartial
-
-	// fetch if exist
-	database.CONN.
-		Model(&model.User{}).
-		Unscoped().
-		Where("id = ?", input.ID).
-		First(&data)
+	data := getUser(input.ID)
 
 	// variables
 	var action string
@@ -79,7 +81,7 @@ func ChangePassword(c *gin.Context) {
 	if err != nil {
 		c.AbortWithStatusJSON(422, gin.H{
 			"status":  "error",
-			"message": "Gagal merubah status akun",
+			"message": "Gagal merubah password akun",
 			"errors":  common.ConvertValidationError(err.Error(), AccountChangePasswordError),
 		})
 		return
@@ -110,17 +112,7 @@ func ChangePassword(c *gin.Context) {
 	}
 
 	// get user data
-	type partialData struct {
-		ID   uint64 `gorm:"column:id"`
-		Name string `gorm:"column:name"`
-	}
-
-	var user partialData
-	database.CONN.
-		Model(&model.User{}).
-		Select("id", "name").
-		Where("id = ?", input.ID).
-		First(&user)
+	user := getUser(input.ID)
 
 	// return
 	c.JSON(200, gin.H{
@@ -141,7 +133,36 @@ func Index(c *gin.Context) {
 
 // purge account, hard delete
 func Purge(c *gin.Context) {
+	// get input
+	var input SingleIDQuery
+	err := c.ShouldBindQuery(&input)
+	if err != nil {
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Gagal menghapus permanen akun",
+			"errors":  common.ConvertValidationError(err.Error(), SingleIDError),
+		})
+		return
+	}
 
+	// get data
+	user := getUser(input.ID)
+
+	// delete data
+	delete := database.CONN.Unscoped().Delete(&model.User{}, input.ID)
+	if delete.Error != nil {
+		c.AbortWithStatusJSON(503, gin.H{
+			"status":  "error",
+			"message": "Database sedang sibuk",
+		})
+		return
+	}
+
+	// return
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": fmt.Sprintf("Akun %s berhasil dihapus secara permanen", user.Name),
+	})
 }
 
 // User Update endpoint

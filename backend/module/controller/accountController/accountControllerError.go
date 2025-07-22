@@ -88,3 +88,13 @@ var AccountStatusError map[string]common.ErrorMessageInterface = map[string]comm
 		},
 	},
 }
+
+var SingleIDError map[string]common.ErrorMessageInterface = map[string]common.ErrorMessageInterface{
+	"ID": {
+		Field: "id",
+		Messages: map[string]string{
+			"required":      "Identitas akun wajib diisi",
+			"is_not_unique": "Akun tidak ditemukan",
+		},
+	},
+}

@@ -21,3 +21,8 @@ type AccountUpdateForm struct {
 	Email    string `json:"email" binding:"required,max=100,email,is_unique=user:email:id:ID:uint64"`
 	RoleID   uint64 `json:"role_id" binding:"required,is_not_unique=role:id"`
 }
+
+// get only single id from query parameter
+type SingleIDQuery struct {
+	ID uint64 `json:"id" form:"id" binding:"required,is_not_unique=user:id"`
+}
