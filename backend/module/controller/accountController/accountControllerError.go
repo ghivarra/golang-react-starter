@@ -43,3 +43,20 @@ var AccountUpdateError map[string]common.ErrorMessageInterface = map[string]comm
 		},
 	},
 }
+
+var AccountStatusError map[string]common.ErrorMessageInterface = map[string]common.ErrorMessageInterface{
+	"ID": {
+		Field: "id",
+		Messages: map[string]string{
+			"required":      "Identitas akun wajib diisi",
+			"is_not_unique": "Akun tidak ditemukan",
+		},
+	},
+	"Status": {
+		Field: "status",
+		Messages: map[string]string{
+			"required": "Target status akun wajib diisi",
+			"in_list":  "status hanya boleh salah satu antara activate dan deactivate",
+		},
+	},
+}

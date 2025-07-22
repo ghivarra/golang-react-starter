@@ -7,7 +7,68 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
+
+// active or inactive
+// we use the soft delete feature for this
+func ActivationStatus(c *gin.Context) {
+	// get query data
+	var input AccountActivationQuery
+	err := c.ShouldBindQuery(&input)
+	if err != nil {
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Gagal merubah status akun",
+			"errors":  common.ConvertValidationError(err.Error(), AccountUpdateError),
+		})
+		return
+	}
+
+	// get data
+	type accountDataPartial struct {
+		ID   uint64 `gorm:"column:id"`
+		Name string `gorm:"column:name"`
+	}
+
+	// data
+	var data accountDataPartial
+
+	// fetch if exist
+	database.CONN.
+		Model(&model.User{}).
+		Unscoped().
+		Where("id = ?", input.ID).
+		First(&data)
+
+	// variables
+	var action string
+	var result *gorm.DB
+
+	// action
+	if input.Status == "deactivate" {
+		result = database.CONN.Delete(&model.User{}, input.ID)
+		action = "dinonaktifkan"
+	} else {
+		result = database.CONN.Model(&model.User{}).Unscoped().Where("id = ?", input.ID).Update("deleted_at", nil)
+		action = "diaktifkan"
+	}
+
+	if result.Error != nil {
+		fmt.Println(result.Error.Error())
+		c.JSON(503, gin.H{
+			"status":  "error",
+			"message": "Database sedang sibuk",
+		})
+		return
+	}
+
+	// return
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": fmt.Sprintf("Akun %s berhasil %s", data.Name, action),
+	})
+}
 
 // Create new account
 func Create(c *gin.Context) {
@@ -17,47 +78,6 @@ func Create(c *gin.Context) {
 // change account password
 func ChangePassword(c *gin.Context) {
 
-}
-
-// deactivate account
-func Deactivate(c *gin.Context) {
-	// get input id
-	userID := c.DefaultQuery("id", "0")
-
-	// get user
-	type partialUser struct {
-		ID   uint64 `gorm:"column:id"`
-		Name string `gorm:"column:name"`
-	}
-
-	// get user data
-	var user partialUser
-	database.CONN.
-		Model(&model.User{}).
-		Select("id", "name").
-		Where("id = ?", userID).
-		First(&user)
-
-	// check if exist
-	if user.Name == "" {
-		c.AbortWithStatusJSON(422, gin.H{
-			"status":  "error",
-			"message": "Gagal menghapus user",
-			"errors": gin.H{
-				"id": []string{"User tidak ditemukan"},
-			},
-		})
-		return
-	}
-
-	// delete
-	database.CONN.Where("id = ?", userID).Delete(&model.User{})
-
-	// return
-	c.JSON(200, gin.H{
-		"status":  "success",
-		"message": fmt.Sprintf("Akun %s berhasil dihapus", user.Name),
-	})
 }
 
 // find specific account
