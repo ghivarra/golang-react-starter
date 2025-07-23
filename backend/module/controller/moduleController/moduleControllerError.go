@@ -20,12 +20,29 @@ var ModuleCreateError map[string]common.ErrorMessageInterface = map[string]commo
 	},
 }
 
-var ModuleDeleteError map[string]common.ErrorMessageInterface = map[string]common.ErrorMessageInterface{
+var ModuleSingleError map[string]common.ErrorMessageInterface = map[string]common.ErrorMessageInterface{
 	"Name": {
 		Field: "name",
 		Messages: map[string]string{
 			"required":      "Nama modul harus diisi.",
 			"is_not_unique": "Modul tidak ditemukan",
+		},
+	},
+}
+
+var ModuleUpdateError map[string]common.ErrorMessageInterface = map[string]common.ErrorMessageInterface{
+	"Name": {
+		Field: "name",
+		Messages: map[string]string{
+			"required":      "Nama modul harus diisi.",
+			"is_not_unique": "Modul tidak ditemukan",
+		},
+	},
+	"Alias": {
+		Field: "alias",
+		Messages: map[string]string{
+			"required": "Anda belum mengisi nama alias.",
+			"max":      "Username maksimal 200 karakter.",
 		},
 	},
 }

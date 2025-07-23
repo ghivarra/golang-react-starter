@@ -11,7 +11,16 @@ import (
 
 // get all modules
 func All(c *gin.Context) {
+	// get model
+	var modules []model.Module
+	database.CONN.Order("name ASC").Find(&modules)
 
+	// return
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": "Data berhasil ditarik",
+		"data":    modules,
+	})
 }
 
 // create module
@@ -52,13 +61,13 @@ func Create(c *gin.Context) {
 // delete module
 func Delete(c *gin.Context) {
 	// get and validate input
-	var input ModuleDeleteForm
+	var input ModuleSingleForm
 	err := c.ShouldBindQuery(&input)
 	if err != nil {
 		c.AbortWithStatusJSON(422, gin.H{
 			"status":  "error",
 			"message": "Gagal menghapus modul",
-			"errors":  common.ConvertValidationError(err.Error(), ModuleDeleteError),
+			"errors":  common.ConvertValidationError(err.Error(), ModuleSingleError),
 		})
 		return
 	}
@@ -81,7 +90,28 @@ func Delete(c *gin.Context) {
 
 // find specific module
 func Find(c *gin.Context) {
+	// get and validate input
+	var input ModuleSingleForm
+	err := c.ShouldBindQuery(&input)
+	if err != nil {
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Gagal menarik data modul",
+			"errors":  common.ConvertValidationError(err.Error(), ModuleSingleError),
+		})
+		return
+	}
 
+	// return
+	var module model.Module
+	database.CONN.First(&module, "name", input.Name)
+
+	// return
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": "Data berhasil ditarik",
+		"data":    module,
+	})
 }
 
 // fetch list of modules
@@ -91,5 +121,35 @@ func Index(c *gin.Context) {
 
 // update module
 func Update(c *gin.Context) {
+	// get and validate input
+	var input ModuleUpdateForm
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Gagal memperbaharui modul " + input.Name,
+			"errors":  common.ConvertValidationError(err.Error(), ModuleUpdateError),
+		})
+		return
+	}
 
+	// update alias
+	update := database.CONN.
+		Model(&model.Module{}).
+		Where("name = ?", input.Name).
+		Update("alias", input.Alias)
+
+	if update.Error != nil {
+		c.AbortWithStatusJSON(503, gin.H{
+			"status":  "error",
+			"message": "Database sedang sibuk. Gagal memperbaharui modul " + input.Name,
+		})
+		return
+	}
+
+	// return ok
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": fmt.Sprintf("Modul %s berhasil diperbaharui", input.Name),
+	})
 }

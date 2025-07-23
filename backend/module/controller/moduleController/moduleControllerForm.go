@@ -5,7 +5,7 @@ type ModuleCreateForm struct {
 	Alias string `json:"alias" binding:"required,max=200"`
 }
 
-type ModuleDeleteForm struct {
+type ModuleSingleForm struct {
 	Name string `form:"name" binding:"required,is_not_unique=module:name"`
 }
 
