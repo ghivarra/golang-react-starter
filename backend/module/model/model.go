@@ -16,7 +16,7 @@ type Module struct {
 type Role struct {
 	ID           uint64    `gorm:"primaryKey;->"`
 	Name         string    `gorm:"unique;size:60;not null"`
-	IsSuperadmin int       `gorm:"defalt:0;not null"`
+	IsSuperadmin int       `gorm:"default:0;not null"`
 	CreatedAt    time.Time `gorm:"<-:create;autoCreateTime"`
 	UpdatedAt    time.Time `gorm:"autoCreateTime;autoUpdateTime"`
 }

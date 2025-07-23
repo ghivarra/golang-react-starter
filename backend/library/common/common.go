@@ -100,15 +100,15 @@ func ConvertFieldValueByType(field reflect.Value) any {
 	// set tempValue
 	var tempValue any
 
-	if datatype[0:4] == "uint" {
+	if len(datatype) > 3 && datatype[0:4] == "uint" {
 		tempValue = field.Uint()
-	} else if datatype[0:3] == "int" {
+	} else if len(datatype) > 2 && datatype[0:3] == "int" {
 		tempValue = field.Int()
 	} else if datatype == "bool" {
 		tempValue = field.Bool()
 	} else if datatype == "string" {
 		tempValue = field.String()
-	} else if datatype[0:5] == "float" {
+	} else if len(datatype) > 4 && datatype[0:5] == "float" {
 		tempValue = field.Float()
 	} else {
 		tempValue = field.String()

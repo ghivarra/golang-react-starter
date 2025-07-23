@@ -4,6 +4,7 @@ import (
 	"backend/module/controller/accountController"
 	"backend/module/controller/authController"
 	"backend/module/controller/moduleController"
+	"backend/module/controller/roleController"
 	"backend/module/controller/userController"
 	"backend/module/middleware/auth"
 	"backend/module/middleware/cors"
@@ -28,7 +29,6 @@ func Load(router *gin.Engine) *gin.Engine {
 	// account
 	apiAccount := api.Group("account")
 	apiAccount.Use(auth.IsLoggedIn)
-
 	apiAccount.GET("/find", name.Save("account.find"), auth.CheckRole, accountController.Find)
 	apiAccount.POST("/index", name.Save("account.index"), auth.CheckRole, accountController.Index)
 	apiAccount.POST("/create", name.Save("account.create"), auth.CheckRole, authController.Register)
@@ -40,7 +40,6 @@ func Load(router *gin.Engine) *gin.Engine {
 	// self user endpoint
 	apiUser := api.Group("user")
 	apiUser.Use(auth.IsLoggedIn)
-
 	apiUser.GET("/", userController.Get)
 	apiUser.PATCH("/change-password", userController.ChangePassword)
 	apiUser.PATCH("/update", userController.Update)
@@ -49,13 +48,23 @@ func Load(router *gin.Engine) *gin.Engine {
 	// module group
 	apiModule := api.Group("module")
 	apiModule.Use(auth.IsLoggedIn)
-
 	apiModule.GET("/", name.Save("module.all"), auth.CheckRole, moduleController.All)
 	apiModule.GET("/find", name.Save("module.find"), auth.CheckRole, moduleController.Find)
 	apiModule.POST("/index", name.Save("module.index"), auth.CheckRole, moduleController.Index)
 	apiModule.POST("/create", name.Save("module.create"), auth.CheckRole, moduleController.Create)
 	apiModule.PATCH("/update", name.Save("module.update"), auth.CheckRole, moduleController.Update)
 	apiModule.DELETE("/delete", name.Save("module.delete"), auth.CheckRole, moduleController.Delete)
+
+	// module group
+	apiRole := api.Group("role")
+	apiRole.Use(auth.IsLoggedIn)
+	apiRole.GET("/", name.Save("role.all"), auth.CheckRole, roleController.All)
+	apiRole.GET("/find", name.Save("role.find"), auth.CheckRole, roleController.Find)
+	apiRole.POST("/index", name.Save("role.index"), auth.CheckRole, roleController.Index)
+	apiRole.POST("/create", name.Save("role.create"), auth.CheckRole, roleController.Create)
+	apiRole.PATCH("/update", name.Save("role.update"), auth.CheckRole, roleController.Update)
+	apiRole.PUT("/save-modules", name.Save("role.save-modules"), auth.CheckRole, roleController.SaveModules)
+	apiRole.DELETE("/delete", name.Save("role.delete"), auth.CheckRole, roleController.Delete)
 
 	// return instance
 	return router
