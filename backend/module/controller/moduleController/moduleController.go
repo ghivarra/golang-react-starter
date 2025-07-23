@@ -5,8 +5,10 @@ import (
 	"backend/library/common"
 	"backend/module/model"
 	"fmt"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm/clause"
 )
 
 // get all modules
@@ -116,7 +118,121 @@ func Find(c *gin.Context) {
 
 // fetch list of modules
 func Index(c *gin.Context) {
+	// get and validate
+	var input common.IndexForm
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Gagal menarik data",
+			"errors":  common.ConvertValidationError(err.Error(), common.IndexError),
+		})
+		return
+	}
 
+	// process
+	defaultModel := &model.Module{}
+	defaultTableName := "module"
+	defaultIDColumn := "name"
+	defaultSelect := []string{"name", "alias", "created_at", "updated_at"}
+	defaultOrderColumn := clause.OrderByColumn{
+		Column: clause.Column{
+			Table: defaultTableName,
+			Name:  "alias",
+		},
+	}
+
+	// aliaeses
+	defaultAliases := map[string]string{}
+
+	// result data
+	var totalUnfiltered int64
+	var totalFiltered int64
+	var rows []model.Module
+	var result []model.Module
+
+	// find total and filtered total
+	database.CONN.Model(defaultModel).Count(&totalUnfiltered)
+
+	// check if input query is supplied
+	if input.Query != nil {
+		// orm
+		ormTotal := database.CONN.Model(defaultModel)
+
+		if len(input.ExcludeID) > 0 {
+			ormTotal = ormTotal.Where(fmt.Sprintf("%s NOT IN ?", defaultIDColumn), input.ExcludeID)
+		}
+
+		common.ProcessIndexQuery(ormTotal, *input.Query, defaultTableName, defaultAliases)
+
+		// get filtered
+		ormTotal.Count(&totalFiltered)
+	} else {
+		// same as total unfiltered
+		totalFiltered = totalUnfiltered
+	}
+
+	// get data
+	ormSelect := database.CONN.
+		Model(defaultModel).
+		Select(defaultSelect)
+
+	// set exclusion
+	if len(input.ExcludeID) > 0 {
+		ormSelect = ormSelect.Where(fmt.Sprintf("%s NOT IN ?", defaultIDColumn), input.ExcludeID)
+	}
+
+	// if
+	if input.Query != nil {
+		common.ProcessIndexQuery(ormSelect, *input.Query, defaultTableName, defaultAliases)
+	}
+
+	// set order
+	orderColumnDir := (input.Order.Dir == "desc")
+	isRaw := strings.Contains(input.Order.Column, ".")
+	newOrderColumn := clause.OrderByColumn{
+		Column: clause.Column{
+			Table: defaultTableName,
+			Name:  input.Order.Column,
+			Raw:   isRaw,
+		},
+		Desc: orderColumnDir,
+	}
+
+	var orderColumn []clause.OrderByColumn
+	orderColumn = append(orderColumn, newOrderColumn, defaultOrderColumn)
+
+	// get data
+	dbSelect := ormSelect.
+		Order(orderColumn).
+		Limit(int(input.Limit)).
+		Offset(int(input.Offset)).
+		Find(&rows)
+
+	if dbSelect.Error != nil {
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Gagal menarik data",
+			"errors": gin.H{
+				"query": []string{"Ada kesalahan pada query"},
+			},
+		})
+		return
+	}
+
+	// mutate the data or just straight append
+	result = append(result, rows...)
+
+	// return data
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": "Data berhasil ditarik",
+		"data": gin.H{
+			"totalUnfiltered": totalUnfiltered,
+			"totalFiltered":   totalFiltered,
+			"rows":            result,
+		},
+	})
 }
 
 // update module

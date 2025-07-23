@@ -178,6 +178,7 @@ func Index(c *gin.Context) {
 	}
 
 	// process
+	defaultModel := &model.User{}
 	defaultTableName := "user"
 	defaultIDColumn := "user.id"
 	defaultSelect := []string{"user.id", "user.name", "username", "email", "role_id", "role.name as role_name", "user.created_at", "user.updated_at"}
@@ -186,7 +187,6 @@ func Index(c *gin.Context) {
 			Table: defaultTableName,
 			Name:  "name",
 		},
-		Desc: false,
 	}
 
 	// aliaeses
@@ -194,17 +194,19 @@ func Index(c *gin.Context) {
 		"role_name": "role.name",
 	}
 
-	// get all total
+	// results variable
 	var totalUnfiltered int64
 	var totalFiltered int64
+	var rows []dataInterface
+	var result []dataInterface
 
 	// find total and filtered total
-	database.CONN.Model(&model.User{}).Count(&totalUnfiltered)
+	database.CONN.Model(defaultModel).Count(&totalUnfiltered)
 
 	// check if input query is supplied
 	if input.Query != nil {
 		// orm
-		ormTotal := database.CONN.Model(&model.User{}).Joins("JOIN role ON user.role_id = role.id")
+		ormTotal := database.CONN.Model(defaultModel).Joins("JOIN role ON user.role_id = role.id")
 
 		if len(input.ExcludeID) > 0 {
 			ormTotal = ormTotal.Where(fmt.Sprintf("%s NOT IN ?", defaultIDColumn), input.ExcludeID)
@@ -221,7 +223,7 @@ func Index(c *gin.Context) {
 
 	// get data
 	ormSelect := database.CONN.
-		Model(&model.User{}).
+		Model(defaultModel).
 		Select(defaultSelect).
 		Joins("JOIN role ON user.role_id = role.id")
 
@@ -251,7 +253,6 @@ func Index(c *gin.Context) {
 	orderColumn = append(orderColumn, newOrderColumn, defaultOrderColumn)
 
 	// get data
-	var rows []dataInterface
 	dbSelect := ormSelect.
 		Order(orderColumn).
 		Limit(int(input.Limit)).
@@ -268,9 +269,6 @@ func Index(c *gin.Context) {
 		})
 		return
 	}
-
-	// set result
-	var result []dataInterface
 
 	// mutate the data or just straight append
 	result = append(result, rows...)

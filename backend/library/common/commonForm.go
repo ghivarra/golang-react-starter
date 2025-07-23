@@ -4,7 +4,7 @@ package common
 type IndexForm struct {
 	Limit     uint          `json:"limit" binding:"required,numeric"`
 	Offset    uint          `json:"offset" binding:"numeric"`
-	ExcludeID []uint        `json:"excludeID" binding:"required"`
+	ExcludeID []any         `json:"excludeID" binding:"required"`
 	Order     IndexOrder    `json:"order" binding:"required"`
 	Query     *[]IndexQuery `json:"query" binding:"dive"`
 }
