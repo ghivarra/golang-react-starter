@@ -5,6 +5,10 @@ type RoleCreateForm struct {
 	IsSuperadmin int    `json:"is_superadmin" binding:"in_list=0:1"`
 }
 
+type RoleSingleID struct {
+	ID uint64 `json:"id" form:"id" binding:"required,is_not_unique=role:id"`
+}
+
 type RoleUpdateForm struct {
 	ID           uint64 `json:"id" binding:"required,is_not_unique=role:id"`
 	Name         string `json:"name" binding:"required,is_unique=role:name:id:ID:uint64,max=60"`
