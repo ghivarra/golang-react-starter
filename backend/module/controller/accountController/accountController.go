@@ -11,12 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// partial for response message only
-type AccountDataPartial struct {
-	ID   uint64 `gorm:"column:id"`
-	Name string `gorm:"column:name"`
-}
-
+// get user by id with partial struct
 func getUser(id any) AccountDataPartial {
 	// get user data
 	var user AccountDataPartial
@@ -156,7 +151,19 @@ func Find(c *gin.Context) {
 
 // get index of accounts
 func Index(c *gin.Context) {
+	// get and validate
+	var input common.IndexForm
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Gagal menarik data",
+			"errors":  common.ConvertValidationError(err.Error(), common.IndexError),
+		})
+		return
+	}
 
+	fmt.Println(input)
 }
 
 // purge account, hard delete

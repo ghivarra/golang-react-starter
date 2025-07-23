@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+// convert string into specfic supplied value
+// but still return as any
 func ConvertStringByType(initialValue string, datatype string) any {
 
 	// init error variable
@@ -87,6 +89,8 @@ func ConvertStringByType(initialValue string, datatype string) any {
 	return value
 }
 
+// convert reflect.value that could be anything into a specific value
+// but still return as any
 func ConvertFieldValueByType(field reflect.Value) any {
 	// field
 	datatype := field.Type().String()
@@ -127,6 +131,8 @@ func ConvertFieldValueByType(field reflect.Value) any {
 	return value
 }
 
+// Convert error from validation that was a string into a structured
+// json format with customizable error response
 func ConvertValidationError(errorText string, errorResponse map[string]ErrorMessageInterface) map[string][]string {
 
 	// create result
@@ -150,6 +156,7 @@ func ConvertValidationError(errorText string, errorResponse map[string]ErrorMess
 		}
 
 		// create new variable
+		key := strings.ReplaceAll(neededPhrases[0], "'", "")
 		input := strings.ReplaceAll(neededPhrases[1], "'", "")
 		validation := strings.ReplaceAll(neededPhrases[2], "'", "")
 
@@ -160,9 +167,21 @@ func ConvertValidationError(errorText string, errorResponse map[string]ErrorMess
 		// check if response exist
 		response, responseExist := errorResponse[input]
 		if !responseExist {
-			// put default input and message
-			field = input
-			message = "Form tidak valid"
+
+			// find another response
+			keyResponse, keyResponseExist := errorResponse[key]
+
+			if keyResponseExist {
+
+				field = keyResponse.Field
+				message = keyResponse.Messages[validation]
+
+			} else {
+
+				// put default input and message
+				field = key
+				message = "Form tidak valid"
+			}
 
 		} else {
 
@@ -171,7 +190,7 @@ func ConvertValidationError(errorText string, errorResponse map[string]ErrorMess
 
 			// get message and check if exist
 			var messageExist bool
-			message, messageExist = errorResponse[input].Messages[validation]
+			message, messageExist = response.Messages[validation]
 			if !messageExist {
 				message = "Form tidak valid"
 			}

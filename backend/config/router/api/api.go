@@ -29,8 +29,8 @@ func Load(router *gin.Engine) *gin.Engine {
 	apiAccount := api.Group("account")
 	apiAccount.Use(auth.IsLoggedIn)
 
-	apiAccount.GET("/", name.Save("user.index"), auth.CheckRole, accountController.Index)
 	apiAccount.GET("/find", name.Save("user.find"), auth.CheckRole, accountController.Find)
+	apiAccount.POST("/", name.Save("user.index"), auth.CheckRole, accountController.Index)
 	apiAccount.POST("/create", name.Save("user.create"), auth.CheckRole, authController.Register)
 	apiAccount.PATCH("/change-password", name.Save("user.change-password"), auth.CheckRole, accountController.ChangePassword)
 	apiAccount.PATCH("/update", name.Save("user.update"), auth.CheckRole, accountController.Update)
@@ -50,8 +50,8 @@ func Load(router *gin.Engine) *gin.Engine {
 	apiModule := api.Group("module")
 	apiModule.Use(auth.IsLoggedIn)
 
-	apiModule.GET("/", moduleController.Index)
 	apiModule.GET("/find", moduleController.Find)
+	apiModule.POST("/", moduleController.Index)
 	apiModule.POST("/create", moduleController.Create)
 	apiModule.PATCH("/update", moduleController.Update)
 	apiModule.DELETE("/delete", moduleController.Delete)
