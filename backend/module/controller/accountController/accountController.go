@@ -56,7 +56,6 @@ func ActivationStatus(c *gin.Context) {
 	}
 
 	if result.Error != nil {
-		fmt.Println(result.Error.Error())
 		c.JSON(503, gin.H{
 			"status":  "error",
 			"message": "Database sedang sibuk",

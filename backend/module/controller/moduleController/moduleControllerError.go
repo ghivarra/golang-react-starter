@@ -19,3 +19,13 @@ var ModuleCreateError map[string]common.ErrorMessageInterface = map[string]commo
 		},
 	},
 }
+
+var ModuleDeleteError map[string]common.ErrorMessageInterface = map[string]common.ErrorMessageInterface{
+	"Name": {
+		Field: "name",
+		Messages: map[string]string{
+			"required":      "Nama modul harus diisi.",
+			"is_not_unique": "Modul tidak ditemukan",
+		},
+	},
+}

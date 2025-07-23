@@ -29,13 +29,13 @@ func Load(router *gin.Engine) *gin.Engine {
 	apiAccount := api.Group("account")
 	apiAccount.Use(auth.IsLoggedIn)
 
-	apiAccount.GET("/find", name.Save("user.find"), auth.CheckRole, accountController.Find)
-	apiAccount.POST("/", name.Save("user.index"), auth.CheckRole, accountController.Index)
-	apiAccount.POST("/create", name.Save("user.create"), auth.CheckRole, authController.Register)
-	apiAccount.PATCH("/change-password", name.Save("user.change-password"), auth.CheckRole, accountController.ChangePassword)
-	apiAccount.PATCH("/update", name.Save("user.update"), auth.CheckRole, accountController.Update)
-	apiAccount.DELETE("/activation-status", name.Save("user.activation-status"), auth.CheckRole, accountController.ActivationStatus)
-	apiAccount.DELETE("/purge", name.Save("user.purge"), auth.CheckRole, accountController.Purge)
+	apiAccount.GET("/find", name.Save("account.find"), auth.CheckRole, accountController.Find)
+	apiAccount.POST("/index", name.Save("account.index"), auth.CheckRole, accountController.Index)
+	apiAccount.POST("/create", name.Save("account.create"), auth.CheckRole, authController.Register)
+	apiAccount.PATCH("/change-password", name.Save("account.change-password"), auth.CheckRole, accountController.ChangePassword)
+	apiAccount.PATCH("/update", name.Save("account.update"), auth.CheckRole, accountController.Update)
+	apiAccount.DELETE("/activation-status", name.Save("account.activation-status"), auth.CheckRole, accountController.ActivationStatus)
+	apiAccount.DELETE("/purge", name.Save("account.purge"), auth.CheckRole, accountController.Purge)
 
 	// self user endpoint
 	apiUser := api.Group("user")
@@ -50,11 +50,12 @@ func Load(router *gin.Engine) *gin.Engine {
 	apiModule := api.Group("module")
 	apiModule.Use(auth.IsLoggedIn)
 
-	apiModule.GET("/find", moduleController.Find)
-	apiModule.POST("/", moduleController.Index)
-	apiModule.POST("/create", moduleController.Create)
-	apiModule.PATCH("/update", moduleController.Update)
-	apiModule.DELETE("/delete", moduleController.Delete)
+	apiModule.GET("/", name.Save("module.all"), auth.CheckRole, moduleController.All)
+	apiModule.GET("/find", name.Save("module.find"), auth.CheckRole, moduleController.Find)
+	apiModule.POST("/index", name.Save("module.index"), auth.CheckRole, moduleController.Index)
+	apiModule.POST("/create", name.Save("module.create"), auth.CheckRole, moduleController.Create)
+	apiModule.PATCH("/update", name.Save("module.update"), auth.CheckRole, moduleController.Update)
+	apiModule.DELETE("/delete", name.Save("module.delete"), auth.CheckRole, moduleController.Delete)
 
 	// return instance
 	return router
