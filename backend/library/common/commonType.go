@@ -25,13 +25,28 @@ type ErrorMessageInterface struct {
 }
 
 type FetchedUserData struct {
-	ID        uint64    `gorm:"column:id"`
-	Name      string    `gorm:"column:name"`
-	Username  string    `gorm:"column:username"`
-	Email     string    `gorm:"column:email"`
-	Password  string    `gorm:"column:password"`
-	RoleID    uint64    `gorm:"column:role_id"`
-	RoleName  string    `gorm:"column:role_name"`
-	CreatedAt time.Time `gorm:"column:created_at"`
-	UpdatedAt time.Time `gorm:"column:updated_at"`
+	ID           uint64    `gorm:"column:id"`
+	Name         string    `gorm:"column:name"`
+	Username     string    `gorm:"column:username"`
+	Email        string    `gorm:"column:email"`
+	Password     string    `gorm:"column:password"`
+	RoleID       uint64    `gorm:"column:role_id"`
+	RoleName     string    `gorm:"column:role_name"`
+	IsSuperadmin uint8     `gorm:"column:is_superadmin"`
+	CreatedAt    time.Time `gorm:"column:created_at"`
+	UpdatedAt    time.Time `gorm:"column:updated_at"`
+}
+
+type CompleteUserData struct {
+	ID             uint64
+	Name           string
+	Username       string
+	Email          string
+	Password       string
+	RoleID         uint64
+	RoleName       string
+	IsSuperadmin   uint8
+	ModulesAllowed []string
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
 }

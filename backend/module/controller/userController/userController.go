@@ -35,7 +35,7 @@ func ChangePassword(c *gin.Context) {
 	}
 
 	// assert new type
-	user := userdata.(common.FetchedUserData)
+	user := userdata.(common.CompleteUserData)
 
 	// verifikasi password lama
 	invalidPassword := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password))
@@ -91,7 +91,7 @@ func Deactivate(c *gin.Context) {
 	}
 
 	// assert new type
-	user := userdata.(common.FetchedUserData)
+	user := userdata.(common.CompleteUserData)
 
 	// remove account
 	delete := database.CONN.Delete(&model.User{}, user.ID)
@@ -122,7 +122,7 @@ func Get(c *gin.Context) {
 	}
 
 	// convert type
-	user, assertOk := userData.(common.FetchedUserData)
+	user, assertOk := userData.(common.CompleteUserData)
 	if !assertOk {
 		c.JSON(422, gin.H{
 			"status":  "error",
@@ -163,7 +163,7 @@ func Update(c *gin.Context) {
 	}
 
 	// assert new type
-	user := userdata.(common.FetchedUserData)
+	user := userdata.(common.CompleteUserData)
 
 	// validasi ID pada input
 	if input.ID != user.ID {

@@ -6,6 +6,7 @@ import (
 	"backend/library/common/auth"
 	"backend/module/model"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -62,7 +63,7 @@ func IsLoggedIn(c *gin.Context) {
 	// if valid then get user data
 	var user common.FetchedUserData
 	database.CONN.Model(&model.User{}).
-		Select("user.id", "user.name", "username", "email", "password", "role_id", "role.name as role_name", "user.created_at", "user.updated_at").
+		Select("user.id", "user.name", "username", "email", "password", "role_id", "role.name as role_name", "role.is_superadmin", "user.created_at", "user.updated_at").
 		Joins("JOIN role ON role_id = role.id").
 		Where("username = ?", auth.JWT_DATA.SUB).
 		First(&user)
@@ -81,8 +82,42 @@ func IsLoggedIn(c *gin.Context) {
 		return
 	}
 
+	// set user into new user
+	var completeUser common.CompleteUserData
+	completeUser.ID = user.ID
+	completeUser.Name = user.Name
+	completeUser.Email = user.Email
+	completeUser.Username = user.Username
+	completeUser.Password = user.Password
+	completeUser.RoleID = user.RoleID
+	completeUser.RoleName = user.RoleName
+	completeUser.IsSuperadmin = user.IsSuperadmin
+	completeUser.CreatedAt = user.CreatedAt
+	completeUser.UpdatedAt = user.UpdatedAt
+
+	// list module names
+	type ModuleNames struct {
+		Name string `gorm:"column:module_name"`
+	}
+
+	// get role modules if not superadmin
+	if user.IsSuperadmin < 1 {
+		// get list of modules
+		var modules []ModuleNames
+		database.CONN.
+			Model(&model.RoleModuleList{}).
+			Select("module_name").
+			Where("role_id = ?", user.RoleID).
+			Find(&modules)
+
+		// put
+		for _, module := range modules {
+			completeUser.ModulesAllowed = append(completeUser.ModulesAllowed, module.Name)
+		}
+	}
+
 	// store user data in context
-	c.Set("userdata", user)
+	c.Set("userdata", completeUser)
 
 	// next
 	c.Next()
@@ -101,22 +136,10 @@ func CheckRole(c *gin.Context) {
 	}
 
 	// get user based on supplied JWT
-	user := userData.(common.FetchedUserData)
-
-	// get role
-	type roleData struct {
-		ID           uint64 `gorm:"column:id"`
-		IsSuperadmin uint   `gorm:"column:is_superadmin"`
-	}
-
-	var role roleData
-	database.CONN.
-		Model(&model.Role{}).
-		Select("id", "is_superadmin").
-		First(&role, user.RoleID)
+	user := userData.(common.CompleteUserData)
 
 	// check if is superadmin, if value more than 0, then always pass
-	if role.IsSuperadmin > 0 {
+	if user.IsSuperadmin > 0 {
 		c.Next()
 		return
 	}
@@ -130,30 +153,9 @@ func CheckRole(c *gin.Context) {
 		return
 	}
 
-	// if route name is registered in modules
-	var countModule int64
-	database.CONN.
-		Model(&model.Module{}).
-		Where("name = ?", routeName).
-		Count(&countModule)
-
-	// check, and if not exist then it is not registered
-	// thus it is public
-	if countModule < 1 {
-		c.Next()
-		return
-	}
-
-	// check if module is exist in role check
-	var inList int64
-	database.CONN.
-		Model(&model.RoleModuleList{}).
-		Where("role_id = ?", user.RoleID).
-		Where("module_name = ?", routeName).
-		Count(&inList)
-
-	// if not exist then it is forbidden
-	if inList < 1 {
+	// check if is in list
+	routeNameStr := routeName.(string)
+	if !slices.Contains(user.ModulesAllowed, routeNameStr) {
 		c.AbortWithStatusJSON(403, gin.H{
 			"status":  "error",
 			"message": "Anda tidak diizinkan untuk mengakses halaman ini",
@@ -161,6 +163,6 @@ func CheckRole(c *gin.Context) {
 		return
 	}
 
-	// if not superadmin then get module list
+	// next, fine!
 	c.Next()
 }
