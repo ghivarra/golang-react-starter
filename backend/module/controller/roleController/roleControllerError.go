@@ -19,6 +19,22 @@ var RoleCreateError map[string]common.ErrorMessageInterface = map[string]common.
 	},
 }
 
+var RoleSaveModulesError map[string]common.ErrorMessageInterface = map[string]common.ErrorMessageInterface{
+	"ID": {
+		Field: "id",
+		Messages: map[string]string{
+			"required":      "Identitas role wajib diisi",
+			"is_not_unique": "Identitas role tidak ditemukan",
+		},
+	},
+	"Modules": {
+		Field: "modules",
+		Messages: map[string]string{
+			"required": "List modul harus diisi",
+		},
+	},
+}
+
 var RoleSingleIDError map[string]common.ErrorMessageInterface = map[string]common.ErrorMessageInterface{
 	"ID": {
 		Field: "id",

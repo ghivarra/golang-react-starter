@@ -25,7 +25,7 @@ type RoleModuleList struct {
 	ID         uint64 `gorm:"primaryKey;->"`
 	RoleID     uint64 `gorm:"column:role_id;index"`
 	Role       Role   `gorm:"foreignKey:RoleID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	ModuleName uint64 `gorm:"column:module_name;index"`
+	ModuleName string `gorm:"column:module_name;index"`
 	Module     Module `gorm:"foreignKey:ModuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 

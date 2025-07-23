@@ -5,6 +5,11 @@ type RoleCreateForm struct {
 	IsSuperadmin int    `json:"is_superadmin" binding:"in_list=0:1"`
 }
 
+type RoleSaveModulesForm struct {
+	ID      uint64   `json:"id" form:"id" binding:"required,is_not_unique=role:id"`
+	Modules []string `json:"modules" binding:"required"`
+}
+
 type RoleSingleID struct {
 	ID uint64 `json:"id" form:"id" binding:"required,is_not_unique=role:id"`
 }

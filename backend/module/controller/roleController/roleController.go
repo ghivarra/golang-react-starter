@@ -270,7 +270,70 @@ func Index(c *gin.Context) {
 
 // save modules
 func SaveModules(c *gin.Context) {
+	// get and validate input
+	var input RoleSaveModulesForm
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Gagal menyimpan data modul untuk role",
+			"errors":  common.ConvertValidationError(err.Error(), RoleSaveModulesError),
+		})
+		return
+	}
 
+	// delete modules first from role, if exist
+	database.CONN.Where("role_id = ?", input.ID).Delete(&model.RoleModuleList{})
+
+	// find the added modules
+	type MinimalModule struct {
+		Name string `gorm:"column:name"`
+	}
+
+	var modules []MinimalModule
+	database.CONN.
+		Model(&model.Module{}).
+		Select("name").
+		Where("name IN ?", input.Modules).
+		Find(&modules)
+
+	// if empty then don't add anything as it means
+	// the user drop all allowed modules on roles
+	if len(modules) > 0 {
+		// create inserted data
+		var insertData []model.RoleModuleList
+
+		// foreach on modules
+		for _, module := range modules {
+			insertData = append(insertData, model.RoleModuleList{
+				RoleID:     input.ID,
+				ModuleName: module.Name,
+			})
+		}
+
+		// insert batch
+		if insert := database.CONN.Create(&insertData); insert.Error != nil {
+			c.AbortWithStatusJSON(503, gin.H{
+				"status":  "error",
+				"message": "Gagal menyimpan data modul untuk role. Database sedang sibuk.",
+			})
+			return
+		}
+	}
+
+	// find role
+	var role PartialRoleData
+	database.CONN.
+		Model(&model.Role{}).
+		Select("name").
+		Where("id = ?", input.ID).
+		First(&role)
+
+	// return ok
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": fmt.Sprintf("Data modul untuk role %s berhasil disimpan.", role.Name),
+	})
 }
 
 // update role
