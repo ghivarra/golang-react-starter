@@ -5,10 +5,13 @@ import (
 	"backend/library/common"
 	"backend/module/model"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // get user by id with partial struct
@@ -163,7 +166,126 @@ func Index(c *gin.Context) {
 		return
 	}
 
-	fmt.Println(input)
+	// default struct
+	type dataInterface struct {
+		ID        uint64    `gorm:"column:id"`
+		Name      string    `gorm:"column:name"`
+		Username  string    `gorm:"column:username"`
+		Email     string    `gorm:"column:email"`
+		RoleID    uint64    `gorm:"column:role_id"`
+		RoleName  string    `gorm:"column:role_name"`
+		CreatedAt time.Time `gorm:"column:created_at"`
+		UpdatedAt time.Time `gorm:"column:updated_at"`
+	}
+
+	// process
+	defaultTableName := "user"
+	defaultIDColumn := "user.id"
+	defaultSelect := []string{"user.id", "user.name", "username", "email", "role_id", "role.name as role_name", "user.created_at", "user.updated_at"}
+	defaultOrderColumn := clause.OrderByColumn{
+		Column: clause.Column{
+			Table: defaultTableName,
+			Name:  "name",
+		},
+		Desc: false,
+	}
+
+	// aliaeses
+	defaultAliases := map[string]string{
+		"role_name": "role.name",
+	}
+
+	// get all total
+	var totalUnfiltered int64
+	var totalFiltered int64
+
+	// find total and filtered total
+	database.CONN.Model(&model.User{}).Count(&totalUnfiltered)
+
+	// check if input query is supplied
+	if input.Query != nil {
+		// orm
+		ormTotal := database.CONN.Model(&model.User{}).Joins("JOIN role ON user.role_id = role.id")
+
+		if len(input.ExcludeID) > 0 {
+			ormTotal = ormTotal.Where(fmt.Sprintf("%s NOT IN ?", defaultIDColumn), input.ExcludeID)
+		}
+
+		common.ProcessIndexQuery(ormTotal, *input.Query, defaultTableName, defaultAliases)
+
+		// get filtered
+		ormTotal.Count(&totalFiltered)
+	} else {
+		// same as total unfiltered
+		totalFiltered = totalUnfiltered
+	}
+
+	// get data
+	ormSelect := database.CONN.
+		Model(&model.User{}).
+		Select(defaultSelect).
+		Joins("JOIN role ON user.role_id = role.id")
+
+	// set exclusion
+	if len(input.ExcludeID) > 0 {
+		ormSelect = ormSelect.Where(fmt.Sprintf("%s NOT IN ?", defaultIDColumn), input.ExcludeID)
+	}
+
+	// if
+	if input.Query != nil {
+		common.ProcessIndexQuery(ormSelect, *input.Query, defaultTableName, defaultAliases)
+	}
+
+	// set order
+	orderColumnDir := (input.Order.Dir == "desc")
+	isRaw := strings.Contains(input.Order.Column, ".")
+	newOrderColumn := clause.OrderByColumn{
+		Column: clause.Column{
+			Table: defaultTableName,
+			Name:  input.Order.Column,
+			Raw:   isRaw,
+		},
+		Desc: orderColumnDir,
+	}
+
+	var orderColumn []clause.OrderByColumn
+	orderColumn = append(orderColumn, newOrderColumn, defaultOrderColumn)
+
+	// get data
+	var rows []dataInterface
+	dbSelect := ormSelect.
+		Order(orderColumn).
+		Limit(int(input.Limit)).
+		Offset(int(input.Offset)).
+		Find(&rows)
+
+	if dbSelect.Error != nil {
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Gagal menarik data",
+			"errors": gin.H{
+				"query": []string{"Ada kesalahan pada query"},
+			},
+		})
+		return
+	}
+
+	// set result
+	var result []dataInterface
+
+	// mutate the data or just straight append
+	result = append(result, rows...)
+
+	// return data
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": "Data berhasil ditarik",
+		"data": gin.H{
+			"totalUnfiltered": totalUnfiltered,
+			"totalFiltered":   totalFiltered,
+			"rows":            result,
+		},
+	})
 }
 
 // purge account, hard delete

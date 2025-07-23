@@ -22,18 +22,6 @@ var IndexError map[string]ErrorMessageInterface = map[string]ErrorMessageInterfa
 			"required": "ID item yang tidak akan ditarik wajib diisi atau isi dengan array kosong",
 		},
 	},
-	"Columns": {
-		Field: "columns",
-		Messages: map[string]string{
-			"required": "List kolom yang akan ditarik wajib diisi",
-		},
-	},
-	"ColumnName": {
-		Field: "columns.name",
-		Messages: map[string]string{
-			"required": "Nama kolom yang akan ditarik wajib diisi",
-		},
-	},
 	"Order": {
 		Field: "order",
 		Messages: map[string]string{

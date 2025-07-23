@@ -2,19 +2,11 @@ package common
 
 // index form
 type IndexForm struct {
-	Limit     uint           `json:"limit" binding:"required,numeric"`
-	Offset    uint           `json:"offset" binding:"required,numeric"`
-	ExcludeID []uint         `json:"excludeID" binding:"required"`
-	Columns   []IndexColumns `json:"columns" binding:"required,dive"`
-	Order     IndexOrder     `json:"order" binding:"required"`
-	Query     *[]IndexQuery  `json:"query" binding:"dive"`
-}
-
-// index form columns
-type IndexColumns struct {
-	ColumnName       string `json:"name" binding:"required"`
-	ColumnSearchable *bool  `json:"searchable" binding:"boolean"`
-	ColumnSortable   *bool  `json:"sortable" binding:"boolean"`
+	Limit     uint          `json:"limit" binding:"required,numeric"`
+	Offset    uint          `json:"offset" binding:"numeric"`
+	ExcludeID []uint        `json:"excludeID" binding:"required"`
+	Order     IndexOrder    `json:"order" binding:"required"`
+	Query     *[]IndexQuery `json:"query" binding:"dive"`
 }
 
 // index form order

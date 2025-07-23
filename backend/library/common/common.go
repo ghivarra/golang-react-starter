@@ -6,6 +6,8 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 // convert string into specfic supplied value
@@ -212,4 +214,46 @@ func ConvertValidationError(errorText string, errorResponse map[string]ErrorMess
 
 	// return
 	return result
+}
+
+// process index
+func ProcessIndexQuery(db *gorm.DB, queries []IndexQuery, tableName string, aliases map[string]string) {
+	// set variable
+	var queryString string
+	var queryColumn string
+	var queryValue any
+
+	// switch case
+	for _, query := range queries {
+
+		// mutate query column
+		alias, aliasExist := aliases[queryColumn]
+		if aliasExist {
+			queryColumn = alias
+		} else {
+			queryColumn = fmt.Sprintf("%s.%s", tableName, query.QueryColumn)
+		}
+
+		// mutate query value
+		if strings.ToLower(query.QueryValue) == "null" {
+			queryValue = nil
+		} else {
+			queryValue = query.QueryValue
+		}
+
+		switch query.QueryCommand {
+		case "is":
+			queryString = fmt.Sprintf("%s = ?", queryColumn)
+			db.Where(queryString, queryValue)
+		case "is_not":
+			queryString = fmt.Sprintf("%s != ?", queryColumn)
+			db.Where(queryString, queryValue)
+		case "contain":
+			queryString = fmt.Sprintf("%s LIKE ?", queryColumn)
+			db.Where(queryString, "%"+fmt.Sprintf("%v", queryValue)+"%")
+		case "not_contain":
+			queryString = fmt.Sprintf("%s NOT LIKE ?", queryColumn)
+			db.Where(queryString, "%"+fmt.Sprintf("%v", queryValue)+"%")
+		}
+	}
 }

@@ -8,13 +8,14 @@ import (
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 )
 
 // database connection instance
 var CONN *gorm.DB
 
-func buildDSN(multipleStatement bool) string {
+func buildMySQLDSN(multipleStatement bool) string {
 	// set config
 	host := environment.DB_HOST
 	port := environment.DB_PORT
@@ -36,13 +37,43 @@ func buildDSN(multipleStatement bool) string {
 	return dsn
 }
 
+func buildPostgresDSN() string {
+	// set config
+	host := environment.DB_HOST
+	port := environment.DB_PORT
+	name := environment.DB_NAME
+	user := environment.DB_USERNAME
+	pass := environment.DB_PASSWORD
+	ssl := environment.DB_SSL
+	timezone := environment.DB_TIMEZONE
+
+	// build dsn
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s", host, user, pass, name, port, ssl, timezone)
+
+	// return dsn
+	return dsn
+}
+
 func Connect(multipleStatement bool) {
 
 	// init error
 	var err error
 
 	// build dsn
-	dsn := buildDSN(multipleStatement)
+	var dsn string
+	if environment.DB_TYPE == "postgres" {
+		dsn = buildPostgresDSN()
+	} else {
+		dsn = buildMySQLDSN(multipleStatement)
+	}
+
+	// set logger options
+	var loggerOption logger.Interface
+	if environment.ENV == "development" {
+		loggerOption = logger.Default.LogMode(logger.Info)
+	} else {
+		loggerOption = logger.Default.LogMode(logger.Error)
+	}
 
 	// connect
 	CONN, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
@@ -50,6 +81,7 @@ func Connect(multipleStatement bool) {
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true,
 		},
+		Logger: loggerOption,
 	})
 
 	// handling error connection

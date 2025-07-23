@@ -20,6 +20,9 @@ var SERVER_HOST string
 // server port
 var SERVER_PORT string
 
+// database type, between MySQL and Postgres
+var DB_TYPE string
+
 // database host
 var DB_HOST string
 
@@ -47,6 +50,9 @@ var DB_CHARSET string
 // database collation e.g. utf8mb4_general_ci, utf8mb4_unicode_ci, etc.
 var DB_COLLATE string
 
+// database using ssl or not, between disable or enable
+var DB_SSL string
+
 // jwt key
 var JWT_KEY string
 
@@ -70,6 +76,7 @@ func Save() {
 	APP_NAME = os.Getenv("APP_NAME")
 	SERVER_HOST = os.Getenv("SERVER_HOST")
 	SERVER_PORT = os.Getenv("SERVER_PORT")
+	DB_TYPE = os.Getenv("DB_TYPE")
 	DB_HOST = os.Getenv("DB_HOST")
 	DB_PORT = os.Getenv("DB_PORT")
 	DB_NAME = os.Getenv("DB_NAME")
@@ -79,6 +86,7 @@ func Save() {
 	DB_ENGINE = os.Getenv("DB_ENGINE")
 	DB_CHARSET = os.Getenv("DB_CHARSET")
 	DB_COLLATE = os.Getenv("DB_COLLATE")
+	DB_SSL = os.Getenv("DB_SSL")
 	JWT_KEY = os.Getenv("JWT_KEY")
 
 	// need to be converted
