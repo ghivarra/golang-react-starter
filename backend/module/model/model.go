@@ -33,8 +33,8 @@ type Menu struct {
 	ID         uint64    `gorm:"primaryKey;->"`
 	Alias      string    `gorm:"size:200;not null"`
 	RouteName  string    `gorm:"column:route_name;size:200;not null"`
-	Icon       string    `gorm:"size:100;"`
 	SortNumber int       `gorm:"column:sort_number;not null;index"`
+	Icon       *string   `gorm:"size:100;"`
 	CreatedAt  time.Time `gorm:"<-:create;autoCreateTime"`
 	UpdatedAt  time.Time `gorm:"autoCreateTime;autoUpdateTime"`
 }

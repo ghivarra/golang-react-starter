@@ -2,7 +2,9 @@ package menuController
 
 import (
 	"backend/database"
+	"backend/library/common"
 	"backend/module/model"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 )
@@ -26,7 +28,44 @@ func All(c *gin.Context) {
 
 // create menu
 func Create(c *gin.Context) {
+	// get input and validate
+	var input MenuCreateForm
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Gagal membuat menu",
+			"errors":  common.ConvertValidationError(err.Error(), MenuCreateError),
+		})
+		return
+	}
 
+	// set input data
+	var menu model.Menu
+	menu.Alias = input.Alias
+	menu.RouteName = input.RouteName
+	menu.SortNumber = input.SortNumber
+
+	// if not nil then insert the icon
+	// if not we use the default which is null
+	if input.Icon != nil {
+		menu.Icon = input.Icon
+	}
+
+	// create menu
+	if create := database.CONN.Create(&menu); create.Error != nil {
+		c.AbortWithStatusJSON(503, gin.H{
+			"status":  "error",
+			"message": "Gagal membuat menu, database sedang sibuk",
+		})
+		return
+	}
+
+	// return
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": fmt.Sprintf("Menu %s berhasil dibuat di urutan ke-%d", menu.Alias, menu.SortNumber),
+	})
 }
 
 // delete menu

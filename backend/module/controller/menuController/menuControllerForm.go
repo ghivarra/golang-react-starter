@@ -1,1 +1,8 @@
 package menuController
+
+type MenuCreateForm struct {
+	Alias      string  `json:"alias" binding:"required,max=200"`
+	RouteName  string  `json:"route_name" binding:"required,max=200"`
+	SortNumber int     `json:"sort_number" binding:"required,numeric"`
+	Icon       *string `json:"icon" binding:"omitnil,max=100"`
+}
