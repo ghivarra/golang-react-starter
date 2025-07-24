@@ -1,0 +1,5 @@
+package menuController
+
+func Index() {
+    
+}

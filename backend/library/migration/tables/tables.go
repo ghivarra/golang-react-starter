@@ -1,7 +1,9 @@
 package tables
 
 import (
+	"backend/library/migration/tables/menuTable"
 	"backend/library/migration/tables/moduleTable"
+	"backend/library/migration/tables/roleMenuListTable"
 	"backend/library/migration/tables/roleModuleListTable"
 	"backend/library/migration/tables/roleTable"
 	"backend/library/migration/tables/tokenRefreshTable"
@@ -17,10 +19,14 @@ func MigrationUp() {
 	userTable.Up()
 	tokenRefreshTable.Up()
 	tokenRevokedTable.Up()
+	menuTable.Up()
+	roleMenuListTable.Up()
 }
 
 // the table Down function here will be reverted
 func MigrationDown() {
+	roleMenuListTable.Down()
+	menuTable.Down()
 	tokenRevokedTable.Down()
 	tokenRefreshTable.Down()
 	userTable.Down()
