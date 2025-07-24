@@ -9,7 +9,7 @@ func Run(c *gin.Context) {
 	c.Header("Access-Control-Allow-Origin", "*")
 	c.Header("Access-Control-Allow-Credentials", "true")
 	c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-	c.Header("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PATCH, DELETE")
+	c.Header("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, PATCH, DELETE")
 
 	// if options then send 204 - no content
 	if c.Request.Method == "OPTIONS" {

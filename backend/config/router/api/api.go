@@ -20,12 +20,14 @@ func Load(router *gin.Engine) *gin.Engine {
 	// set api router
 	api := router.Group("api")
 	api.Use(cors.Run, database.Connect)
+	api.OPTIONS("/*any", cors.Run)
 
 	// auth group
 	apiAuth := api.Group("auth")
 	apiAuth.POST("/register", authController.Register)
 	apiAuth.POST("/authenticate", authController.Authenticate)
 	apiAuth.POST("/refresh-token", authController.RefreshToken)
+	apiAuth.GET("/check", auth.IsLoggedIn, authController.Check)
 
 	// account
 	apiAccount := api.Group("account")

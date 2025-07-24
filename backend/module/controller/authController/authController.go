@@ -90,6 +90,14 @@ func Authenticate(c *gin.Context) {
 	})
 }
 
+// check
+func Check(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": "Anda sudah terotentikasi",
+	})
+}
+
 // Refresh Token Endpoint
 func RefreshToken(c *gin.Context) {
 	// get input and validate
