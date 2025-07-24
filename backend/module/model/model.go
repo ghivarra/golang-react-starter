@@ -6,13 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type Module struct {
-	Name      string    `gorm:"unique;size:200;not null"`
-	Alias     string    `gorm:"size:200;not null"`
-	CreatedAt time.Time `gorm:"<-:create;autoCreateTime"`
-	UpdatedAt time.Time `gorm:"autoCreateTime;autoUpdateTime"`
-}
-
 type Role struct {
 	ID           uint64    `gorm:"primaryKey;->"`
 	Name         string    `gorm:"unique;size:60;not null"`
@@ -21,12 +14,36 @@ type Role struct {
 	UpdatedAt    time.Time `gorm:"autoCreateTime;autoUpdateTime"`
 }
 
+type Module struct {
+	Name      string    `gorm:"unique;size:200;not null"`
+	Alias     string    `gorm:"size:200;not null"`
+	CreatedAt time.Time `gorm:"<-:create;autoCreateTime"`
+	UpdatedAt time.Time `gorm:"autoCreateTime;autoUpdateTime"`
+}
+
 type RoleModuleList struct {
 	ID         uint64 `gorm:"primaryKey;->"`
 	RoleID     uint64 `gorm:"column:role_id;index"`
 	Role       Role   `gorm:"foreignKey:RoleID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	ModuleName string `gorm:"column:module_name;index"`
 	Module     Module `gorm:"foreignKey:ModuleName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+}
+
+type Menu struct {
+	ID        uint64    `gorm:"primaryKey;->"`
+	Alias     string    `gorm:"size:200;not null"`
+	RouteName string    `gorm:"column:route_name;size:200;not null"`
+	Icon      string    `gorm:"size:100;"`
+	CreatedAt time.Time `gorm:"<-:create;autoCreateTime"`
+	UpdatedAt time.Time `gorm:"autoCreateTime;autoUpdateTime"`
+}
+
+type RoleMenuList struct {
+	ID     uint64 `gorm:"primaryKey;->"`
+	RoleID uint64 `gorm:"column:role_id;index"`
+	Role   Role   `gorm:"foreignKey:RoleID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	MenuID uint64 `gorm:"column:menu_id;index"`
+	Menu   Menu   `gorm:"foreignKey:MenuID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 type User struct {
