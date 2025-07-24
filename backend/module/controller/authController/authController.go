@@ -107,7 +107,6 @@ func RefreshToken(c *gin.Context) {
 	// validasi refresh token
 	refreshTokenValid, err := auth.ValidateRefreshToken(input.RefreshToken, input.AccessToken)
 	if !refreshTokenValid || err != nil {
-		fmt.Println(err)
 		c.AbortWithStatusJSON(422, gin.H{
 			"status":  "error",
 			"message": "Rotasi token gagal. Salah satu dari access token atau refresh token tidak valid.",
@@ -125,6 +124,7 @@ func RefreshToken(c *gin.Context) {
 	// get user id
 	var user userData
 	database.CONN.
+		Table("user USE INDEX(username)").
 		Model(&model.User{}).
 		Select("id", "role_id").
 		Where("username = ?", auth.JWT_DATA.SUB).
@@ -138,7 +138,6 @@ func RefreshToken(c *gin.Context) {
 
 	// if success
 	if newJWT.Error != nil {
-		fmt.Println(newJWT.Error)
 		c.AbortWithStatusJSON(503, gin.H{
 			"status":  "error",
 			"message": "Rotasi token gagal. Ada kesalahan pada server.",
