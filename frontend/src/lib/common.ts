@@ -1,5 +1,5 @@
 import type { APIResponse } from "@/types"
-import axios, { AxiosError, type AxiosRequestConfig, type AxiosResponse } from "axios"
+import axios, { AxiosError, type AxiosInstance, type AxiosRequestConfig } from "axios"
 import { toast } from "sonner"
 
 export const deleteCookie = (name: string) => {
@@ -66,11 +66,26 @@ const prepareAxios = (withCredential: boolean, config: AxiosRequestConfig): Axio
     return config
 }
 
-export const refreshToken = async (): Promise<AxiosResponse|void> => {
+export const refreshToken = async (): Promise<boolean> => {
+
+    // check
+    if (!checkAxiosClear()) {
+        return false
+    }
+
+    // set to busy
+    setAxiosStatus("busy")
+
     // get data
     const token = {
         access_token: getCookie("access_token"),
         refresh_token: getCookie("refresh_token"),
+    }
+
+    if (token.refresh_token == "" || token.access_token == "") {
+        // set loggedout
+        setAxiosStatus("loggedOut")
+        return false
     }
 
     // new axios instance
@@ -89,6 +104,8 @@ export const refreshToken = async (): Promise<AxiosResponse|void> => {
         refreshToken: string;
     }
 
+    let status: boolean
+
     // return promise
     try {
 
@@ -102,24 +119,24 @@ export const refreshToken = async (): Promise<AxiosResponse|void> => {
         setCookie("access_token", data.accessToken, import.meta.env.ACCESS_TOKEN_EXPIRATION as number)
         setCookie("refresh_token", data.refreshToken, import.meta.env.REFRESH_TOKEN_EXPIRATION as number)
 
-        // set okay again
-        setAxiosStatus("clear")
+        // status
+        status = true
 
-        // return
-        return axiosInstance
+        // set clear
+        setAxiosStatus("clear")
 
     } catch (err: unknown) {
 
         const error = err as AxiosError
         
-        if (typeof error.response !== "undefined") {
-            if (typeof error.response.data !== "undefined") {
+        if (error.response) {
+            if (error.response.data) {
                 const res = error.response.data as APIResponse
-                console.error(res.message)
-                toast.error(res.message)
+                console.warn(res.message)
+                toast.warning("Sesi anda sudah kedaluwarsa atau anda belum login")
             } else {
-                console.error(error.message)
-                toast.error(error.message)    
+                console.warn(error.message)
+                toast.warning("Sesi anda sudah kedaluwarsa atau anda belum login")
             }
         } else {
             const message = "Failed to rotate token, check your internet connection" 
@@ -127,9 +144,15 @@ export const refreshToken = async (): Promise<AxiosResponse|void> => {
             toast.error(message)
         }
 
-        // return
-        return
+        // set
+        status = false
+
+        // set loggedout
+        setAxiosStatus("loggedOut")
     }
+
+    // return
+    return status
 }
 
 export const checkAxiosClear = (): boolean => {
@@ -146,11 +169,22 @@ export const checkAxiosClear = (): boolean => {
     return (xhrStatus === "clear")
 }
 
-export const setAxiosStatus = (status: "clear"|"busy") => {
+export const setAxiosStatus = (status: "clear"|"busy"|"loggedOut") => {
     localStorage.setItem("xhr_status", status)
 }
 
-export const fetchApi = async (withCredential: boolean, config: AxiosRequestConfig): Promise<AxiosResponse|void> => {
+export const fetchApi = async (withCredential: boolean, config: AxiosRequestConfig = {}, retryCount: number = 0): Promise<AxiosInstance|void> => {
+
+    if (localStorage.getItem("xhr_status") === "loggedOut") {
+        setAxiosStatus("clear")
+        return
+    }
+
+    // set max retry to 10
+    if (retryCount > 9) {
+        setAxiosStatus("clear")
+        return
+    }
 
     // check only if we use credential or access token
     if (withCredential) {
@@ -159,62 +193,61 @@ export const fetchApi = async (withCredential: boolean, config: AxiosRequestConf
         if (!checkAxiosClear()) {
             console.info("Axios waiting for axios status to be cleared...")
             await sleep(1000)
-            return fetchApi(withCredential, config)
+            return fetchApi(withCredential, config, (retryCount + 1))
         }
     }
 
     // send config
     const sentConfig = prepareAxios(withCredential, config)
+    
     // create axios
-    const instance = axios.create()
+    const instance = axios.create(sentConfig)
 
     // set interceptors
-    instance.interceptors.request.use(config => config, async (err: unknown): Promise<Error> => {
+    instance.interceptors.response.use(
+        response => response,        
+        async error => {
 
-        // check error
-        if (err instanceof Error) {
-            if (typeof err.message === 'undefined') {
-                console.error(err)
-                toast.error("Koneksi gagal, cek internet anda")
-            } else {
-                const axiosErr = err as AxiosError
+            // check error
+            if (error instanceof Error) {
+                if (typeof error.message === 'undefined') {
+                    console.error(error)
+                    toast.error("Koneksi gagal, cek internet anda")
+                } else {
+                    const axiosErr = error as AxiosError
 
-                // check if request was unauthorized because access token is expired
-                if (typeof axiosErr.response !== "undefined") {
-                    if (axiosErr.response.status === 401) {
-                        console.warn("Unauthorized. Need to rotate the access token.")
+                    // check if request was unauthorized because access token is expired
+                    if (typeof axiosErr.response !== "undefined") {
+                        if (axiosErr.response.status === 401) {
+                            // send warn to console
+                            console.warn("Unauthorized. Need to rotate the access token.")
 
-                        // set to busy
-                        setAxiosStatus("busy")
+                            // refresh and rotate token
+                            // retry again after waiting 0.25 second again
+                            const refresh = await refreshToken()
 
-                        // refresh and rotate token
-                        // retry again after waiting 0.5 second again
-                        const refresh = await refreshToken()
+                            // set now
+                            if (refresh && axiosErr.config) {
+                                await sleep(250)
+                                instance(axiosErr.config)
+                            }
 
-                        // if
-                        if (typeof refresh !== "undefined") {
-                            instance(sentConfig)
+                            if (!refresh) {
+                                fetchApi(withCredential, axiosErr.config, 1)
+                            }
                         }
                     }
                 }
-                console.warn(axiosErr)
-
-                if (typeof axiosErr.response!.data !== 'undefined') {
-                    const data = axiosErr.response!.data as APIResponse
-                    toast.error(data.message)
-                } else {
-                    toast.error(axiosErr.message)
-                }
+                
+            }  else {
+                console.warn(error)
             }
-            
-        }  else {
-            console.warn(err)
-        }
 
-        // return and reject with error
-        return Promise.reject(err)
-    })
+            // return and reject with error
+            return Promise.reject(error)
+        }
+    )
 
     // return axios
-    return await instance(sentConfig)
+    return instance
 }
