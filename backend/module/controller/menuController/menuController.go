@@ -108,10 +108,62 @@ func Delete(c *gin.Context) {
 
 // find specific menu
 func Find(c *gin.Context) {
+	// get input and validate
+	var input MenuSingleForm
+	err := c.ShouldBindQuery(&input)
+	if err != nil {
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Gagal menarik data menu",
+			"errors":  common.ConvertValidationError(err.Error(), MenuSingleError),
+		})
+		return
+	}
 
+	// get data
+	var menu model.Menu
+	database.CONN.First(&menu, input.ID)
+
+	// return
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": "Data berhasil ditarik",
+		"data":    menu,
+	})
 }
 
 // update menu
 func Update(c *gin.Context) {
+	// get input and validate
+	var input MenuUpdateForm
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Gagal memperbaharui menu",
+			"errors":  common.ConvertValidationError(err.Error(), MenuUpdateError),
+		})
+		return
+	}
 
+	// set data
+	updateData := map[string]any{
+		"alias":      input.Alias,
+		"route_name": input.RouteName,
+		"icon":       input.Icon,
+	}
+
+	// update
+	if update := database.CONN.Model(&model.Menu{}).Where("id = ?", input.ID).Updates(updateData); update.Error != nil {
+		c.AbortWithStatusJSON(503, gin.H{
+			"status":  "error",
+			"message": "Gagal menghapus menu, database sedang sibuk",
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": fmt.Sprintf("Menu %s berhasil diperbaharui", input.Alias),
+	})
 }
