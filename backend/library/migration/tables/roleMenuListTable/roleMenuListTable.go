@@ -8,7 +8,7 @@ import (
 )
 
 // your table name
-var tableName = "roleMenuList"
+var tableName = "role_menu_list"
 var foreignKey1 = fmt.Sprintf("fk_%s_role_id", tableName)
 var foreignKey2 = fmt.Sprintf("fk_%s_menu_id", tableName)
 

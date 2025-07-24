@@ -63,6 +63,7 @@ func IsLoggedIn(c *gin.Context) {
 	// if valid then get user data
 	var user common.FetchedUserData
 	database.CONN.Model(&model.User{}).
+		Table("user USE INDEX(username)").
 		Select("user.id", "user.name", "username", "email", "password", "role_id", "role.name as role_name", "role.is_superadmin", "user.created_at", "user.updated_at").
 		Joins("JOIN role ON role_id = role.id").
 		Where("username = ?", auth.JWT_DATA.SUB).
@@ -105,6 +106,7 @@ func IsLoggedIn(c *gin.Context) {
 		// get list of modules
 		var modules []ModuleNames
 		database.CONN.
+			Table("role_module_list USE INDEX(role_module_list_role_id)").
 			Model(&model.RoleModuleList{}).
 			Select("module_name").
 			Where("role_id = ?", user.RoleID).
