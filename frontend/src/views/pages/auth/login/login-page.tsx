@@ -22,6 +22,7 @@ export default function LoginPage() {
             })
             .catch(() => {
                 console.log("account is logged out")
+                console.clear()
             })
     }, [navigate])
 
