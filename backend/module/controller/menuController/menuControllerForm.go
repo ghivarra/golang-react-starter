@@ -6,3 +6,7 @@ type MenuCreateForm struct {
 	SortNumber int     `json:"sort_number" binding:"required,numeric"`
 	Icon       *string `json:"icon" binding:"omitnil,max=100"`
 }
+
+type MenuSingleForm struct {
+	ID uint64 `json:"id" form:"id" binding:"required,is_not_unique=menu:id"`
+}

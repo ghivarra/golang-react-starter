@@ -70,7 +70,40 @@ func Create(c *gin.Context) {
 
 // delete menu
 func Delete(c *gin.Context) {
+	// get input and validate
+	var input MenuSingleForm
+	err := c.ShouldBindQuery(&input)
+	if err != nil {
+		c.AbortWithStatusJSON(422, gin.H{
+			"status":  "error",
+			"message": "Gagal menghapus menu",
+			"errors":  common.ConvertValidationError(err.Error(), MenuSingleError),
+		})
+		return
+	}
 
+	// get
+	var menu PartialMenuData
+	database.CONN.
+		Model(&model.Menu{}).
+		Select("alias").
+		Where("id = ?", input.ID).
+		First(&menu)
+
+	//delete
+	if delete := database.CONN.Delete(&model.Menu{}, input.ID); delete.Error != nil {
+		c.AbortWithStatusJSON(503, gin.H{
+			"status":  "error",
+			"message": "Gagal menghapus menu, database sedang sibuk",
+		})
+		return
+	}
+
+	// return
+	c.JSON(200, gin.H{
+		"status":  "success",
+		"message": fmt.Sprintf("Menu %s berhasil dihapus", menu.Alias),
+	})
 }
 
 // find specific menu

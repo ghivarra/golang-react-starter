@@ -31,3 +31,13 @@ var MenuCreateError map[string]common.ErrorMessageInterface = map[string]common.
 		},
 	},
 }
+
+var MenuSingleError map[string]common.ErrorMessageInterface = map[string]common.ErrorMessageInterface{
+	"ID": {
+		Field: "id",
+		Messages: map[string]string{
+			"required":      "Identitas menu wajib diisi",
+			"is_not_unique": "Menu tidak ditemukan",
+		},
+	},
+}
