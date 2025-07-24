@@ -118,7 +118,7 @@ export default function LoginPage() {
                     </section>
                 </CardContent>
             </Card>
-            <div className="w-full max-w-[400px] overflow-hidden rounded-r-xl max-md:hidden">
+            <div className="w-full max-w-[400px] overflow-hidden rounded-r-xl shadow-sm max-md:hidden">
                 <img className="h-full w-full object-cover object-center" src={loginBackground} alt="Login Background" />
             </div>
         </main>

@@ -6,22 +6,23 @@ import App from './App.tsx'
 import AuthView from './views/auth-view.tsx'
 import LoginPage from './views/pages/auth/login-page.tsx'
 import RegisterPage from './views/pages/auth/register-page.tsx'
+import routeCollection from './lib/route-collection.ts'
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <BrowserRouter>
-      <Routes>
+    <StrictMode>
+        <BrowserRouter>
+            <Routes>
 
-        <Route path="/" element={ <App /> } />
+                {/* HOME ROUTE  */}
+                <Route path={routeCollection.home} element={ <App /> } />
 
-        <Route path="user">
-          <Route element={ <AuthView /> }>
-            <Route path="login" element={ <LoginPage /> } />
-            <Route path="register" element={ <RegisterPage /> } />
-          </Route>
-        </Route>
+                {/* USER ROUTE  */}
+                <Route element={ <AuthView /> }>
+                    <Route path={routeCollection.user_login} element={ <LoginPage /> } />
+                    <Route path={routeCollection.user_register} element={ <RegisterPage /> } />
+                </Route>
 
-      </Routes>
-    </BrowserRouter>
-  </StrictMode>,
+            </Routes>
+        </BrowserRouter>
+    </StrictMode>,
 )
