@@ -3,6 +3,7 @@ package api
 import (
 	"backend/module/controller/accountController"
 	"backend/module/controller/authController"
+	"backend/module/controller/menuController"
 	"backend/module/controller/moduleController"
 	"backend/module/controller/roleController"
 	"backend/module/controller/userController"
@@ -54,6 +55,15 @@ func Load(router *gin.Engine) *gin.Engine {
 	apiModule.POST("/create", name.Save("module.create"), auth.CheckRole, moduleController.Create)
 	apiModule.PATCH("/update", name.Save("module.update"), auth.CheckRole, moduleController.Update)
 	apiModule.DELETE("/delete", name.Save("module.delete"), auth.CheckRole, moduleController.Delete)
+
+	// menu group
+	apiMenu := api.Group("menu")
+	apiMenu.Use(auth.IsLoggedIn)
+	apiMenu.GET("/", name.Save("menu.all"), auth.CheckRole, menuController.All)
+	apiMenu.GET("/find", name.Save("menu.find"), auth.CheckRole, menuController.Find)
+	apiMenu.POST("/create", name.Save("menu.create"), auth.CheckRole, menuController.Create)
+	apiMenu.PATCH("/update", name.Save("menu.update"), auth.CheckRole, menuController.Update)
+	apiMenu.DELETE("/delete", name.Save("menu.delete"), auth.CheckRole, menuController.Delete)
 
 	// module group
 	apiRole := api.Group("role")

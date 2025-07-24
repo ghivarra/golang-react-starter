@@ -10,7 +10,7 @@ import (
 func Load(router *gin.Engine) *gin.Engine {
 
 	// load api group router
-	router = api.Load(router)
+	api.Load(router)
 
 	// return router instance
 	return router

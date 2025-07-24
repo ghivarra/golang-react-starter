@@ -23,10 +23,13 @@ func Up() {
 			{Name: "alias", Type: "varchar", Length: pointer.IntPtr(200)},
 			{Name: "route_name", Type: "varchar", Length: pointer.IntPtr(200)},
 			{Name: "icon", Type: "varchar", Length: pointer.IntPtr(100), IsNullable: &isTrue},
+			{Name: "sort_number", Type: "int", Default: pointer.StringPtr("1")},
 			{Name: "created_at", Type: "datetime", Default: pointer.StringPtr("CURRENT_TIMESTAMP")},
 			{Name: "updated_at", Type: "datetime", Default: pointer.StringPtr("CURRENT_TIMESTAMP")},
 		},
-		Indexes:     []dbforge.TableIndex{},
+		Indexes: []dbforge.TableIndex{
+			{Name: "sort_number"},
+		},
 		ForeignKeys: []dbforge.TableForeignKey{},
 	})
 
