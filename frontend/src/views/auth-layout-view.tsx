@@ -2,6 +2,8 @@ import { Outlet } from "react-router";
 import { Toaster } from "sonner";
 
 export default function AuthLayoutView() {
+
+    // render
     return (
         <>
             <Toaster position="top-right" richColors />

@@ -7,9 +7,11 @@ import AuthLayoutView from './views/auth-layout-view.tsx'
 import LoginPage from './views/pages/auth/login/login-page.tsx'
 import RegisterPage from './views/pages/auth/register/register-page.tsx'
 import routeCollection from './lib/route-collection.ts'
+import Loader from './components/loader.tsx'
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
+        <Loader />
         <BrowserRouter>
             <Routes>
 

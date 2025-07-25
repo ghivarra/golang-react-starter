@@ -7,7 +7,7 @@ import { deleteCookie, getCookie, setCookie, sleep } from "./common"
 const apiStatusKey = "api_status"
 
 
-const prepareAxios = (withCredential: boolean, config: AxiosRequestConfig): AxiosRequestConfig => {
+export const prepareAxios = (withCredential: boolean, config: AxiosRequestConfig): AxiosRequestConfig => {
     // set more config
     if (typeof config.baseURL === 'undefined') {
         config.baseURL = import.meta.env.VITE_API_BASE as string

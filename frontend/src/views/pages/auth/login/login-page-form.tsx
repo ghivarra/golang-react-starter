@@ -1,7 +1,7 @@
 import { CardContent } from "@/components/ui/card"
 import { useNavigate } from "react-router"
 import CustomDynamicIcon from "@/components/custom-dynamic-icon"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import type { IconCollection } from "@/lib/icon-collection"
 import { LogIn } from "lucide-react"
 import { z } from "zod"
@@ -16,7 +16,10 @@ import type { AxiosError, AxiosResponse } from "axios"
 import { toast } from "sonner"
 import type { APIResponse, UserData } from "@/types"
 import CustomErrorAlert from "@/components/custom-error-alert"
-import { fetchApi, setApiStatus } from "@/lib/api"
+import { prepareAxios, setApiStatus } from "@/lib/api"
+import store from "@/states/stores"
+import { hideLoader, showLoader } from "@/states/slices/loader-slices"
+import axios from "axios"
 
 // set form schema
 const LoginFormSchema = z.object({
@@ -73,8 +76,11 @@ export function LoginPageForm() {
     // init send form
     const sendForm = async () => {
 
+        // loader show
+        store.dispatch(showLoader())
+
         const input = form.getValues()
-        const api = await fetchApi(false)
+        const api = axios.create(prepareAxios(false, {}))
 
         if (!api) {
             return
@@ -100,10 +106,23 @@ export function LoginPageForm() {
             // set api clear
             setApiStatus("clear")
 
+            // clear console
+            console.clear()
+
+            // toast
+            toast.success("Otentikasi berhasil! Anda akan dialihkan dalam beberapa detik")
+
             // login
-            navigate(routeCollection.panel_dashboard)
+            setTimeout(() => {
+                navigate(routeCollection.panel_dashboard)
+            }, 2500)
 
         }).catch((err) => {
+            // hide loader
+            setTimeout(() => {
+                store.dispatch(hideLoader())
+            }, 1500)
+
             const error = err as AxiosError
             if (error.response && error.response.data) {
                 const data = error.response.data as APIResponse
@@ -129,6 +148,12 @@ export function LoginPageForm() {
         })
     }
 
+    // use effect
+    useEffect(() => {
+        store.dispatch(hideLoader())
+    })
+
+    // render
     return (
         <CardContent>
             <section className="mb-6">
