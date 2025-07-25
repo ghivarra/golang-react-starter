@@ -1,6 +1,7 @@
 import type { AxiosError } from "axios"
 import { fetchApi, setApiStatus } from "./api"
 import { deleteCookie } from "./common"
+import routeCollection from "./route-collection"
 
 export const authCheck = async () => {
     // init axios
@@ -19,8 +20,12 @@ export const authCheck = async () => {
     }
 }
 
-export const authLogout = () => {
+export const authLogout = (routeName?: keyof typeof routeCollection) => {
     deleteCookie(import.meta.env.VITE_ACCESS_COOKIE_NAME as string)
     deleteCookie(import.meta.env.VITE_REFRESH_COOKIE_NAME as string)
     setApiStatus("loggedOut")
+
+    if (routeName) {
+        window.location.href = window.location.hostname + routeCollection[routeName]
+    }
 }
