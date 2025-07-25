@@ -1,7 +1,8 @@
 import type { APIResponse } from "@/types"
 import axios, { AxiosError, type AxiosInstance, type AxiosRequestConfig } from "axios"
 import { toast } from "sonner"
-import { deleteCookie, getCookie, setCookie, sleep } from "./common"
+import { getCookie, setCookie, sleep } from "./common"
+import { authLogout } from "./auth"
 
 // axios queue
 const apiStatusKey = "api_status"
@@ -48,8 +49,8 @@ export const refreshToken = async (): Promise<boolean> => {
     }
 
     if (token.refresh_token == "" || token.access_token == "") {
-        // set loggedout
-        setApiStatus("loggedOut")
+        // set loggedout & return false
+        authLogout()
         return false
     }
 
@@ -116,12 +117,8 @@ export const refreshToken = async (): Promise<boolean> => {
         // set
         status = false
 
-        // delete access/refresh token cookie
-        deleteCookie(accessCookieName)
-        deleteCookie(refreshCookieName)
-
-        // set loggedout
-        setApiStatus("loggedOut")
+        // logout
+        authLogout()
     }
 
     // return

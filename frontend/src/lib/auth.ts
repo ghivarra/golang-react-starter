@@ -1,5 +1,6 @@
 import type { AxiosError } from "axios"
-import { fetchApi } from "./api"
+import { fetchApi, setApiStatus } from "./api"
+import { deleteCookie } from "./common"
 
 export const authCheck = async () => {
     // init axios
@@ -16,4 +17,10 @@ export const authCheck = async () => {
         const error = err as AxiosError
         return Promise.reject(error)
     }
+}
+
+export const authLogout = () => {
+    deleteCookie(import.meta.env.VITE_ACCESS_COOKIE_NAME as string)
+    deleteCookie(import.meta.env.VITE_REFRESH_COOKIE_NAME as string)
+    setApiStatus("loggedOut")
 }
